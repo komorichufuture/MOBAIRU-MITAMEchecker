@@ -5,93 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ブログ記事</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
-  
   <style>
     *{ box-sizing:border-box; margin:0; padding:0; }
-    body{ font-family: 'Noto Sans JP', sans-serif; background:#d9d9d9; }
+    body{ font-family:"Noto Sans JP",sans-serif; background:#d9d9d9; }
     .container{ position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:20px; }
-    .grid-row{ display:grid; grid-template-columns:repeat(12,1fr); gap:15px; margin-bottom:15px; aspect-ratio:var(--w)/var(--h); }
-    .grid-item{ background:transparent; border-radius:10px; overflow:hidden; }
-    .grid-item > img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .grid-item-inner{ width:100%; height:100%; display:flex; padding:12px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
-    .md-rendered { white-space:normal; }
-    .md-rendered .md-inner { width:100%; }
-    .md-rendered h1 { font-size:1.6em; font-weight:700; margin:0.3em 0; }
-    .md-rendered h2 { font-size:1.35em; font-weight:700; margin:0.3em 0; }
-    .md-rendered h3 { font-size:1.15em; font-weight:700; margin:0.25em 0; }
-    .md-rendered h4 { font-size:1em; font-weight:700; margin:0.2em 0; }
-    .md-rendered p { margin:0.3em 0; }
-    .md-rendered strong { font-weight:700; }
-    .md-rendered em { font-style:italic; }
-    .md-rendered code { background:rgba(128,128,128,0.2); padding:1px 5px; border-radius:3px; font-family:monospace; font-size:0.9em; }
-    .md-rendered pre { background:rgba(0,0,0,0.1); padding:8px 10px; border-radius:6px; overflow-x:auto; margin:0.4em 0; white-space:pre-wrap; }
-    .md-rendered pre code { background:none; padding:0; }
-    .md-rendered ul,.md-rendered ol { padding-left:1.5em; margin:0.3em 0; }
-    .md-rendered li { margin:0.15em 0; }
-    .md-rendered blockquote { border-left:3px solid #e94560; padding-left:10px; margin:0.4em 0; opacity:0.85; }
-    .md-rendered hr { border:none; border-top:1px solid rgba(128,128,128,0.4); margin:0.5em 0; }
-    .md-rendered a { color:#5ba8ff; text-decoration:underline; }
-    .md-rendered img { max-width:100%; border-radius:4px; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes slideLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes slideRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes zoomIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
-    @keyframes bounce { 0% { opacity:0; transform:translateY(30px); } 60% { opacity:1; transform:translateY(-8px); } 80% { transform:translateY(3px); } 100% { transform:translateY(0); } }
-    @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.03); } }
-    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
-    .anim-fadeIn { animation:fadeIn 0.6s ease both; }
-    .anim-slideUp { animation:slideUp 0.6s ease both; }
-    .anim-slideLeft { animation:slideLeft 0.6s ease both; }
-    .anim-slideRight { animation:slideRight 0.6s ease both; }
-    .anim-zoomIn { animation:zoomIn 0.5s ease both; }
-    .anim-bounce { animation:bounce 0.7s ease both; }
-    .anim-pulse { animation:pulse 2s ease-in-out infinite; }
-    .anim-float { animation:float 3s ease-in-out infinite; }
-    .anim-clickFade { cursor:pointer; transition:opacity 0.4s ease, transform 0.4s ease; }
-    .anim-clickFade.faded { opacity:0; transform:scale(0.95); pointer-events:none; }
-    @media (max-width:768px){ .grid-row{ grid-template-columns:1fr !important; aspect-ratio:auto; } .grid-item{ grid-column:1 / -1 !important; aspect-ratio:auto; } .grid-item-inner{ height:auto; min-height:40px; } }
+    .card-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
+    .card{ aspect-ratio:1/1; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-radius:16px; }
+    .card-img{ flex:0 0 60%; overflow:hidden; }
+    .card-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .card-text{ flex:1; padding:12px; line-height:1.5; word-break:break-word; overflow:hidden; display:flex; }
+    @media(max-width:600px){ .card-grid{ grid-template-columns:1fr; } }
+    .md-rendered{ white-space:normal; } .md-rendered .md-inner{ width:100%; }
+    .md-rendered h1{ font-size:1.4em; font-weight:700; margin:0.2em 0; }
+    .md-rendered h2{ font-size:1.2em; font-weight:700; margin:0.2em 0; }
+    .md-rendered h3{ font-size:1.1em; font-weight:700; margin:0.15em 0; }
+    .md-rendered p{ margin:0.2em 0; } .md-rendered strong{ font-weight:700; } .md-rendered em{ font-style:italic; }
+    .md-rendered code{ background:rgba(128,128,128,0.2); padding:1px 5px; border-radius:3px; font-family:monospace; font-size:0.9em; }
+    .md-rendered ul,.md-rendered ol{ padding-left:1.5em; margin:0.2em 0; } .md-rendered li{ margin:0.1em 0; }
+    .md-rendered blockquote{ border-left:3px solid #e94560; padding-left:10px; margin:0.3em 0; opacity:0.85; }
+    .md-rendered a{ color:#5ba8ff; text-decoration:underline; }
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes zoomIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+    @keyframes bounce{0%{opacity:0;transform:translateY(30px)}60%{opacity:1;transform:translateY(-8px)}80%{transform:translateY(3px)}100%{transform:translateY(0)}}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .anim-fadeIn{animation:fadeIn .6s ease both} .anim-slideUp{animation:slideUp .6s ease both}
+    .anim-slideLeft{animation:slideLeft .6s ease both} .anim-slideRight{animation:slideRight .6s ease both}
+    .anim-zoomIn{animation:zoomIn .5s ease both} .anim-bounce{animation:bounce .7s ease both}
+    .anim-pulse{animation:pulse 2s ease-in-out infinite} .anim-float{animation:float 3s ease-in-out infinite}
+    .anim-clickFade{cursor:pointer;transition:opacity .4s ease,transform .4s ease}
+    .anim-clickFade.faded{opacity:0;transform:scale(0.95);pointer-events:none}
   </style>
 </head>
 <body>
-  
   <div class="container">
-    <div class="grid-row" style="--w:2; --h:1;">
-      <div class="grid-item" style="grid-column: 1 / span 4;border-radius:10px;">
-        <div class="grid-item-inner" style="font-family:'Noto Sans JP', sans-serif;font-size:16px;font-weight:400;color:#333333;text-align:left;justify-content:flex-start;align-items:center;">
-          上段左「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる
-        </div>
-      </div>
-      <div class="grid-item" style="grid-column: 5 / span 4;border-radius:10px;">
-        <div class="grid-item-inner" style="font-family:'Noto Sans JP', sans-serif;font-size:16px;font-weight:400;color:#333333;writing-mode:vertical-rl;align-items:flex-end;justify-content:center;">
-          上段中央最近、Claude Codeでほぼすべての業務を完結させるスタイルで仕事をしていますが、これがめちゃくちゃ良いです。<br><br>私はメインの仕事として新規事業立ち上げや事業成長の支援をしており、日々の仕事の大半は、戦略立案、リサーチ、コンテンツの発信、プロジェクトのディレクションといった非エンジニアリング業務です。<br><br>それらすべてをClaude Codeに集約し、毎朝AIに工程表を作ってもらい、プロジェクトの背景情報を加味した戦略立案、トレンド収集から記事執筆、タスク管理までをコマンド一発で回す。
-        </div>
-      </div>
-      <div class="grid-item" style="grid-column: 9 / span 4;border-radius:10px;">
-        <div class="grid-item-inner" style="font-family:'Noto Sans JP', sans-serif;font-size:16px;font-weight:400;color:#333333;text-align:left;justify-content:flex-start;align-items:center;">
-          上段右「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる
-        </div>
-      </div>
+    <div class="card-grid">
+    <div class="card" style="background:#fff;border-radius:10px;">
+      <div class="card-text" style="flex:1 1 100%;font-family:'Noto Serif JP', serif;font-size:16px;font-weight:400;color:#333333;writing-mode:vertical-rl;align-items:center;justify-content:center;">中央「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる</div>
     </div>
-    <div class="grid-row" style="--w:2; --h:1;">
-      <div class="grid-item" style="grid-column: 5 / span 4;border-radius:10px;">
-        <div class="grid-item-inner" style="font-family:'Noto Serif JP', serif;font-size:16px;font-weight:700;color:#333333;writing-mode:vertical-rl;align-items:flex-end;justify-content:center;">
-          「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる
-        </div>
-      </div>
+    <div class="card" style="background:#fff;border-radius:10px;">
+      <div class="card-text" style="flex:1 1 100%;font-family:'Noto Sans JP', sans-serif;font-size:16px;font-weight:400;color:#333333;text-align:left;align-items:center;">中央「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる</div>
     </div>
-    <div class="grid-row" style="--w:2; --h:1;">
-      <div class="grid-item" style="grid-column: 5 / span 4;border-radius:10px;">
-        <div class="grid-item-inner" style="font-family:'Noto Sans JP', sans-serif;font-size:16px;font-weight:400;color:#333333;text-align:center;justify-content:center;align-items:center;">
-          「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる
-        </div>
-      </div>
+    <div class="card" style="background:#fff;border-radius:10px;">
+      <div class="card-text" style="flex:1 1 100%;font-family:'Noto Sans JP', sans-serif;font-size:20px;font-weight:400;color:#333333;text-align:left;align-items:center;">中央「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる</div>
+    </div>
+    <div class="card" style="background:rgba(255,204,204,1);border-radius:10px;">
+      <div class="card-text" style="flex:1 1 100%;font-family:'Noto Sans JP', sans-serif;font-size:16px;font-weight:400;color:#333333;writing-mode:vertical-rl;align-items:flex-start;justify-content:center;">中央「欲しいもの」は自分が一番分かっている<br>市販の学習サービスもありますが、自分の欲しい機能をピンポイントで揃えたアプリが欲しかった。具体的には：<br><br>ダッシュボードで 連続学習日数（streak） や正答率の推移が見える<br>タグ別に 得意・苦手が可視化 される<br>10 問のサクッと演習から 100 問の模擬試験まで対応<br>問題文を日本語/英語で切り替えられる</div>
+    </div>
     </div>
   </div>
-  <script>
-    document.querySelectorAll('.anim-clickFade').forEach(el => {
-      el.addEventListener('click', () => el.classList.toggle('faded'));
-    });
-  </script>
+  <script>document.querySelectorAll(".anim-clickFade").forEach(el=>{el.addEventListener("click",()=>el.classList.toggle("faded"))});</script>
 </body>
 </html>
