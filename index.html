@@ -1,435 +1,230 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>モバイルカルーセルグリッド</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f5f5;
-            overflow-x: hidden;
-        }
-
-        /* ナビゲーションバー */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .navbar h1 {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        /* タブメニュー */
-        .tab-menu {
-            position: fixed;
-            top: 50px;
-            left: 0;
-            right: 0;
-            background-color: white;
-            display: flex;
-            justify-content: space-around;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 999;
-        }
-
-        .tab-button {
-            flex: 1;
-            padding: 15px 10px;
-            background: none;
-            border: none;
-            font-size: 15px;
-            font-weight: 500;
-            color: #666;
-            cursor: pointer;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .tab-button.active {
-            color: #667eea;
-        }
-
-        .tab-button.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: scaleX(0);
-            }
-            to {
-                transform: scaleX(1);
-            }
-        }
-
-        /* カルーセルコンテナ */
-        .carousel-container {
-            margin-top: 110px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .carousel-wrapper {
-            display: flex;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .carousel-slide {
-            min-width: 100%;
-            padding: 20px;
-        }
-
-        /* グリッド */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .grid-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
-        }
-
-        .grid-item:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        }
-
-        .grid-item-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-
-        .grid-item-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .grid-item-description {
-            font-size: 13px;
-            color: #888;
-            line-height: 1.4;
-        }
-
-        /* カラーバリエーション */
-        .grid-item:nth-child(1) { border-left: 4px solid #667eea; }
-        .grid-item:nth-child(2) { border-left: 4px solid #f093fb; }
-        .grid-item:nth-child(3) { border-left: 4px solid #4facfe; }
-        .grid-item:nth-child(4) { border-left: 4px solid #43e97b; }
-        .grid-item:nth-child(5) { border-left: 4px solid #fa709a; }
-        .grid-item:nth-child(6) { border-left: 4px solid #feca57; }
-
-        /* インジケーター */
-        .indicators {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 20px;
-        }
-
-        .indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #ddd;
-            transition: all 0.3s ease;
-        }
-
-        .indicator.active {
-            width: 24px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>モバイルダッシュボード</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --navH:56px;
+    --tabH:48px;
+    --line:rgba(0,0,0,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;background:var(--bg);color:#111}
+  .nav{
+    height:var(--navH);
+    padding:14px 16px 12px;
+    color:#fff;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:3;
+  }
+  .nav h1{margin:0;font-size:18px;font-weight:900}
+  .nav .sub{font-size:12px;opacity:.9;margin-top:2px}
+  .tabs{
+    height:var(--tabH);
+    background:#fff;
+    border-bottom:1px solid rgba(0,0,0,.06);
+    display:flex;
+    position:sticky;
+    top:var(--navH);
+    z-index:2;
+  }
+  .tabBtn{
+    flex:1;border:0;background:transparent;
+    font-size:13px;font-weight:900;letter-spacing:.04em;
+    color:#6b7280;position:relative;
+  }
+  .tabBtn.active{color:#111}
+  .tabBtn.active::after{
+    content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:0;background:#111
+  }
+  .content{height:calc(100vh - var(--navH) - var(--tabH));overflow:hidden}
+  .carousel{height:100%;display:flex;transition:transform .34s cubic-bezier(.2,.8,.2,1);will-change:transform}
+  .slide{min-width:100%;height:100%;overflow:auto;padding:14px 14px 18px}
+  .grid{display:grid;gap:12px}
+  .grid2{grid-template-columns:repeat(2,1fr)}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+  .card{
+    background:#fff;border:1px solid rgba(0,0,0,.08);
+    padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.04);
+    display:flex;flex-direction:column;gap:8px;cursor:pointer;overflow:hidden;
+  }
+  .card:active{transform:scale(.985)}
+  .top{display:flex;gap:10px;align-items:center}
+  .icon{
+    width:40px;height:40px;border-radius:0;
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.06);
+    overflow:hidden;flex:0 0 auto;
+  }
+  .icon img{width:100%;height:100%;object-fit:cover}
+  .title{font-size:14px;font-weight:900;line-height:1.2}
+  .desc{font-size:12px;color:#6b7280;line-height:1.35}
+  .badges{display:flex;gap:6px;flex-wrap:wrap}
+  .badge{font-size:11px;border:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.03);padding:4px 8px;border-radius:0;font-weight:800}
+  /* md */
+  .md-render p{margin:0 0 .55em 0}
+  .md-render p:last-child{margin-bottom:0}
+  .md-render ul,.md-render ol{margin:.25em 0 .6em 1.2em;padding:0}
+  .md-render li{margin:.12em 0}
+  .md-render a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+  .md-render code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:.95em;background:rgba(0,0,0,.06);padding:.1em .25em;border-radius:0}
+  .md-render pre{background:rgba(0,0,0,.06);padding:10px;border-radius:0;overflow:auto;margin:.4em 0}
+  .md-render pre code{background:transparent;padding:0}
+</style>
 </head>
 <body>
-    <!-- ナビゲーションバー -->
-    <div class="navbar">
-        <h1>📱 モバイルダッシュボード</h1>
-    </div>
+<div id="app"></div>
+<script>
+  const data = {"pageTitle":"モバイルダッシュボード","pageSub":"","navColor1":"#111111","navColor2":"#111111","useGrad":false,"tabCount":2,"gridCols":2,"cardRadius":0,"tabs":[{"name":"ホーム","items":[{"emoji":"📊","img":"","title":"**統計**","desc":"- 今日の閲覧数\n- 週次推移","link":"","badges":["NEW"]}]},{"name":"作業","items":[{"emoji":"🧠","img":"","title":"メモ","desc":"　先行する月額約3,000円のハイエンドプラン「Google AI Pro（旧Gemini Advanced）」、そして競合であるOpenAIの「ChatGPT Plus」。これまで有料AIの世界標準は“月20ドル（約3,000円）”だった。その常識に、グーグルは真正面から価格破壊を仕掛けた格好だ。\n\n　この1,200円は単なる値下げではない。AI市場の構造を塗り替える「戦略価格」である。本稿では、ビジネスパーソンにとっての実利、競合への影響、そして「AI格差社会」の可能性までを多角的\n\nニュースサイトで読む: https://biz-journal.jp/company/post_393405.html\nCopyright © Business Journal All Rights Reserved.","link":"","badges":[]},{"emoji":"🗂️","img":"","title":"素材","desc":"　先行する月額約3,000円のハイエンドプラン「Google AI Pro（旧Gemini Advanced）」、そして競合であるOpenAIの「ChatGPT Plus」。これまで有料AIの世界標準は“月20ドル（約3,000円）”だった。その常識に、グーグルは真正面から価格破壊を仕掛けた格好だ。\n\n　この1,200円は単なる値下げではない。AI市場の構造を塗り替える「戦略価格」である。本稿では、ビジネスパーソンにとっての実利、競合への影響、そして「AI格差社会」の可能性までを多角的\n\nニュースサイトで読む: https://biz-journal.jp/company/post_393405.html\nCopyright © Business Journal All Rights Reserved.","link":"","badges":[]}]}]};
 
-    <!-- タブメニュー -->
-    <div class="tab-menu">
-        <button class="tab-button active" data-index="0">ホーム</button>
-        <button class="tab-button" data-index="1">サービス</button>
-        <button class="tab-button" data-index="2">設定</button>
-    </div>
+  function escapeHtml(s){
+    return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function md(s){
+    const t = (s==null) ? "" : String(s);
+    try{
+      return DOMPurify.sanitize(marked.parse(t));
+    }catch(e){
+      return escapeHtml(t).replace(/\n/g,"<br>");
+    }
+  }
+  function navBg(){
+    return data.useGrad
+      ? `linear-gradient(135deg, ${data.navColor1} 0%, ${data.navColor2} 100%)`
+      : data.navColor1;
+  }
 
-    <!-- カルーセルコンテナ -->
-    <div class="carousel-container" id="carouselContainer">
-        <div class="carousel-wrapper" id="carouselWrapper">
-            <!-- スライド1: ホーム -->
-            <div class="carousel-slide">
-                <div class="grid">
-                    <div class="grid-item">
-                        <div class="grid-item-icon">📊</div>
-                        <div class="grid-item-title">統計</div>
-                        <div class="grid-item-description">データを分析</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">📈</div>
-                        <div class="grid-item-title">レポート</div>
-                        <div class="grid-item-description">月次レポート</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">💼</div>
-                        <div class="grid-item-title">プロジェクト</div>
-                        <div class="grid-item-description">進行中: 5件</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">✅</div>
-                        <div class="grid-item-title">タスク</div>
-                        <div class="grid-item-description">未完了: 12件</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">📅</div>
-                        <div class="grid-item-title">カレンダー</div>
-                        <div class="grid-item-description">今日の予定</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🔔</div>
-                        <div class="grid-item-title">通知</div>
-                        <div class="grid-item-description">新着: 3件</div>
-                    </div>
-                </div>
+  let currentTab = 0;
+
+  function render(){
+    const app = document.getElementById("app");
+    app.innerHTML = "";
+
+    const nav = document.createElement("div");
+    nav.className = "nav";
+    nav.style.background = navBg();
+    nav.innerHTML = `
+      <div>
+        <h1>${escapeHtml(data.pageTitle||"")}</h1>
+        <div class="sub">${escapeHtml(data.pageSub||"")}</div>
+      </div>`;
+
+    const tabs = document.createElement("div");
+    tabs.className = "tabs";
+
+    (data.tabs||[]).forEach((t,i)=>{
+      const b = document.createElement("button");
+      b.className = "tabBtn" + (i===currentTab ? " active":"");
+      b.textContent = t.name || `タブ${i+1}`;
+      b.onclick = ()=>{ currentTab=i; render(); };
+      tabs.appendChild(b);
+    });
+
+    const content = document.createElement("div");
+    content.className = "content";
+
+    const car = document.createElement("div");
+    car.className = "carousel";
+    car.style.transform = `translateX(-${currentTab*100}%)`;
+
+    (data.tabs||[]).forEach((t)=>{
+      const slide = document.createElement("div");
+      slide.className = "slide";
+
+      const grid = document.createElement("div");
+      grid.className = "grid " + (data.gridCols===3 ? "grid3":"grid2");
+
+      (t.items||[]).forEach((it)=>{
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.borderRadius = "0px";
+
+        const icon = it.img
+          ? `<div class="icon"><img src="${escapeHtml(it.img)}" onerror="this.closest('.icon').style.display='none'"></div>`
+          : `<div class="icon">${escapeHtml(it.emoji||"🧩")}</div>`;
+
+        const badges = (it.badges||[]).map(b=>`<span class="badge">${escapeHtml(b)}</span>`).join("");
+
+        card.innerHTML = `
+          <div class="top">
+            ${icon}
+            <div style="min-width:0">
+              <div class="title md-render">${md(it.title||"")}</div>
+              <div class="desc md-render">${md(it.desc||"")}</div>
             </div>
+          </div>
+          ${badges ? `<div class="badges">${badges}</div>` : ""}
+        `;
 
-            <!-- スライド2: サービス -->
-            <div class="carousel-slide">
-                <div class="grid">
-                    <div class="grid-item">
-                        <div class="grid-item-icon">💳</div>
-                        <div class="grid-item-title">決済</div>
-                        <div class="grid-item-description">お支払い管理</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🛍️</div>
-                        <div class="grid-item-title">ショップ</div>
-                        <div class="grid-item-description">商品を探す</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">📦</div>
-                        <div class="grid-item-title">配送</div>
-                        <div class="grid-item-description">配送状況確認</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🎫</div>
-                        <div class="grid-item-title">チケット</div>
-                        <div class="grid-item-description">予約・購入</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🏨</div>
-                        <div class="grid-item-title">予約</div>
-                        <div class="grid-item-description">ホテル・レストラン</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🎮</div>
-                        <div class="grid-item-title">エンタメ</div>
-                        <div class="grid-item-description">ゲーム・動画</div>
-                    </div>
-                </div>
-            </div>
+        card.onclick = ()=>{
+          if(it.link) window.open(it.link,"_blank");
+        };
 
-            <!-- スライド3: 設定 -->
-            <div class="carousel-slide">
-                <div class="grid">
-                    <div class="grid-item">
-                        <div class="grid-item-icon">👤</div>
-                        <div class="grid-item-title">プロフィール</div>
-                        <div class="grid-item-description">個人情報編集</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🔐</div>
-                        <div class="grid-item-title">セキュリティ</div>
-                        <div class="grid-item-description">パスワード変更</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🌙</div>
-                        <div class="grid-item-title">テーマ</div>
-                        <div class="grid-item-description">ダークモード</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🔔</div>
-                        <div class="grid-item-title">通知設定</div>
-                        <div class="grid-item-description">プッシュ通知</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">🌐</div>
-                        <div class="grid-item-title">言語</div>
-                        <div class="grid-item-description">日本語</div>
-                    </div>
-                    <div class="grid-item">
-                        <div class="grid-item-icon">❓</div>
-                        <div class="grid-item-title">ヘルプ</div>
-                        <div class="grid-item-description">サポート</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        grid.appendChild(card);
+      });
 
-    <!-- インジケーター -->
-    <div class="indicators" id="indicators">
-        <div class="indicator active"></div>
-        <div class="indicator"></div>
-        <div class="indicator"></div>
-    </div>
+      slide.appendChild(grid);
+      car.appendChild(slide);
+    });
 
-    <script>
-        // 要素の取得
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const carouselWrapper = document.getElementById('carouselWrapper');
-        const carouselContainer = document.getElementById('carouselContainer');
-        const indicators = document.querySelectorAll('.indicator');
-        
-        let currentIndex = 0;
-        let startX = 0;
-        let isDragging = false;
-        let currentTranslate = 0;
-        let prevTranslate = 0;
+    content.appendChild(car);
 
-        // タブボタンのクリックイベント
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index);
-                goToSlide(index);
-            });
-        });
+    app.appendChild(nav);
+    app.appendChild(tabs);
+    app.appendChild(content);
 
-        // スライドに移動
-        function goToSlide(index) {
-            currentIndex = index;
-            const translateX = -index * 100;
-            carouselWrapper.style.transform = `translateX(${translateX}%)`;
-            
-            // タブボタンの状態更新
-            tabButtons.forEach((btn, i) => {
-                btn.classList.toggle('active', i === index);
-            });
-            
-            // インジケーターの状態更新
-            indicators.forEach((ind, i) => {
-                ind.classList.toggle('active', i === index);
-            });
-        }
+    attachSwipe(content);
+  }
 
-        // タッチイベント（スワイプ対応）
-        carouselContainer.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            isDragging = true;
-            carouselWrapper.style.transition = 'none';
-        });
+  let swipeBound=false;
+  function attachSwipe(area){
+    if(swipeBound) return;
+    swipeBound=true;
 
-        carouselContainer.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            
-            const currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            currentTranslate = prevTranslate + diff;
-            
-            const translatePercent = (currentTranslate / window.innerWidth) * 100;
-            carouselWrapper.style.transform = `translateX(calc(-${currentIndex * 100}% + ${translatePercent}%))`;
-        });
+    let startX=0,startY=0,dx=0,drag=false;
+    area.addEventListener("touchstart",(e)=>{
+      startX=e.touches[0].clientX;
+      startY=e.touches[0].clientY;
+      dx=0; drag=true;
+    },{passive:true});
 
-        carouselContainer.addEventListener('touchend', (e) => {
-            isDragging = false;
-            carouselWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            const movedBy = currentTranslate - prevTranslate;
-            
-            // スワイプ判定（50px以上移動した場合）
-            if (movedBy < -50 && currentIndex < tabButtons.length - 1) {
-                currentIndex++;
-            } else if (movedBy > 50 && currentIndex > 0) {
-                currentIndex--;
-            }
-            
-            goToSlide(currentIndex);
-            prevTranslate = -currentIndex * window.innerWidth;
-            currentTranslate = prevTranslate;
-        });
+    area.addEventListener("touchmove",(e)=>{
+      if(!drag) return;
+      dx=e.touches[0].clientX-startX;
+      const dy=e.touches[0].clientY-startY;
+      if(Math.abs(dy) > Math.abs(dx)) return;
+      const car=document.querySelector(".carousel");
+      if(car){
+        car.style.transition="none";
+        const base=-currentTab*100;
+        const follow=(dx/area.clientWidth)*100;
+        car.style.transform=`translateX(${base+follow}%)`;
+      }
+    },{passive:true});
 
-        // マウスイベント（デスクトップでのテスト用）
-        carouselContainer.addEventListener('mousedown', (e) => {
-            startX = e.clientX;
-            isDragging = true;
-            carouselWrapper.style.transition = 'none';
-        });
+    area.addEventListener("touchend",()=>{
+      if(!drag) return;
+      drag=false;
+      const car=document.querySelector(".carousel");
+      if(car) car.style.transition="transform .34s cubic-bezier(.2,.8,.2,1)";
+      if(Math.abs(dx)>50){
+        if(dx<0 && currentTab < (data.tabs.length-1)) currentTab++;
+        if(dx>0 && currentTab>0) currentTab--;
+      }
+      render();
+    },{passive:true});
+  }
 
-        carouselContainer.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            
-            const currentX = e.clientX;
-            const diff = currentX - startX;
-            currentTranslate = prevTranslate + diff;
-            
-            const translatePercent = (currentTranslate / window.innerWidth) * 100;
-            carouselWrapper.style.transform = `translateX(calc(-${currentIndex * 100}% + ${translatePercent}%))`;
-        });
-
-        carouselContainer.addEventListener('mouseup', () => {
-            isDragging = false;
-            carouselWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            const movedBy = currentTranslate - prevTranslate;
-            
-            if (movedBy < -50 && currentIndex < tabButtons.length - 1) {
-                currentIndex++;
-            } else if (movedBy > 50 && currentIndex > 0) {
-                currentIndex--;
-            }
-            
-            goToSlide(currentIndex);
-            prevTranslate = -currentIndex * window.innerWidth;
-            currentTranslate = prevTranslate;
-        });
-
-        carouselContainer.addEventListener('mouseleave', () => {
-            if (isDragging) {
-                isDragging = false;
-                carouselWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-                goToSlide(currentIndex);
-            }
-        });
-
-        // グリッドアイテムのクリックイベント
-        document.querySelectorAll('.grid-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const title = item.querySelector('.grid-item-title').textContent;
-                alert(`「${title}」がタップされました`);
-            });
-        });
-    </script>
+  render();
+</script>
 </body>
 </html>
