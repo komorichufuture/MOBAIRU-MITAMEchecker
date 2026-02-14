@@ -1,171 +1,435 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ボトムナビ デモ</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モバイルカルーセルグリッド</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
-    background: #f5f5f5;
-    height: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-  }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
 
-  /* ── ヘッダー ── */
-  header {
-    background: #fff;
-    padding: 16px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 600;
-    border-bottom: 1px solid #e0e0e0;
-  }
+        /* ナビゲーションバー */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
 
-  /* ── メインコンテンツ ── */
-  main {
-    overflow-y: auto;
-    padding: 20px 16px;
-  }
+        .navbar h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
 
-  .page {
-    display: none;
-    animation: fadeIn 0.25s ease;
-  }
-  .page.active { display: block; }
+        /* タブメニュー */
+        .tab-menu {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 999;
+        }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+        .tab-button {
+            flex: 1;
+            padding: 15px 10px;
+            background: none;
+            border: none;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s ease;
+        }
 
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .card h3 { margin-bottom: 8px; color: #333; }
-  .card p  { color: #666; font-size: 14px; line-height: 1.6; }
+        .tab-button.active {
+            color: #667eea;
+        }
 
-  /* ── ボトムナビ（3等分グリッド） ── */
-  nav {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;  /* ★ 3等分 */
-    background: #fff;
-    border-top: 1px solid #e0e0e0;
-    padding-bottom: env(safe-area-inset-bottom); /* iPhone対応 */
-  }
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            animation: slideIn 0.3s ease;
+        }
 
-  nav button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 10px 0;
-    border: none;
-    background: transparent;
-    color: #999;
-    font-size: 11px;
-    cursor: pointer;
-    transition: color 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
+        @keyframes slideIn {
+            from {
+                transform: scaleX(0);
+            }
+            to {
+                transform: scaleX(1);
+            }
+        }
 
-  nav button.active {
-    color: #4f7df9;
-  }
+        /* カルーセルコンテナ */
+        .carousel-container {
+            margin-top: 110px;
+            overflow: hidden;
+            position: relative;
+        }
 
-  nav button svg {
-    width: 24px;
-    height: 24px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-</style>
+        .carousel-wrapper {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            padding: 20px;
+        }
+
+        /* グリッド */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .grid-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .grid-item:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .grid-item-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .grid-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .grid-item-description {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        /* カラーバリエーション */
+        .grid-item:nth-child(1) { border-left: 4px solid #667eea; }
+        .grid-item:nth-child(2) { border-left: 4px solid #f093fb; }
+        .grid-item:nth-child(3) { border-left: 4px solid #4facfe; }
+        .grid-item:nth-child(4) { border-left: 4px solid #43e97b; }
+        .grid-item:nth-child(5) { border-left: 4px solid #fa709a; }
+        .grid-item:nth-child(6) { border-left: 4px solid #feca57; }
+
+        /* インジケーター */
+        .indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            width: 24px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
 </head>
 <body>
-
-<header id="headerTitle">ホーム</header>
-
-<!-- ── メインコンテンツ ── -->
-<main>
-  <div class="page active" id="page-home">
-    <div class="card">
-      <h3>🏠 ホーム画面</h3>
-      <p>ここがメインのコンテンツエリアです。上下にヘッダーとボトムナビを配置し、中央のコンテンツはスクロール可能です。</p>
+    <!-- ナビゲーションバー -->
+    <div class="navbar">
+        <h1>📱 モバイルダッシュボード</h1>
     </div>
-    <div class="card">
-      <h3>グリッド構造</h3>
-      <p>画面全体を <code>grid-template-rows: auto 1fr auto</code> で3段に分け、ボトムナビは <code>grid-template-columns: 1fr 1fr 1fr</code> で3等分しています。</p>
+
+    <!-- タブメニュー -->
+    <div class="tab-menu">
+        <button class="tab-button active" data-index="0">ホーム</button>
+        <button class="tab-button" data-index="1">サービス</button>
+        <button class="tab-button" data-index="2">設定</button>
     </div>
-    <div class="card"><h3>カード 3</h3><p>スクロール確認用のダミーカードです。</p></div>
-    <div class="card"><h3>カード 4</h3><p>スクロール確認用のダミーカードです。</p></div>
-    <div class="card"><h3>カード 5</h3><p>スクロール確認用のダミーカードです。</p></div>
-  </div>
 
-  <div class="page" id="page-search">
-    <div class="card">
-      <h3>🔍 検索画面</h3>
-      <p>検索機能のコンテンツがここに入ります。タブを切り替えるとフェードインアニメーションで表示されます。</p>
+    <!-- カルーセルコンテナ -->
+    <div class="carousel-container" id="carouselContainer">
+        <div class="carousel-wrapper" id="carouselWrapper">
+            <!-- スライド1: ホーム -->
+            <div class="carousel-slide">
+                <div class="grid">
+                    <div class="grid-item">
+                        <div class="grid-item-icon">📊</div>
+                        <div class="grid-item-title">統計</div>
+                        <div class="grid-item-description">データを分析</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">📈</div>
+                        <div class="grid-item-title">レポート</div>
+                        <div class="grid-item-description">月次レポート</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">💼</div>
+                        <div class="grid-item-title">プロジェクト</div>
+                        <div class="grid-item-description">進行中: 5件</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">✅</div>
+                        <div class="grid-item-title">タスク</div>
+                        <div class="grid-item-description">未完了: 12件</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">📅</div>
+                        <div class="grid-item-title">カレンダー</div>
+                        <div class="grid-item-description">今日の予定</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🔔</div>
+                        <div class="grid-item-title">通知</div>
+                        <div class="grid-item-description">新着: 3件</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スライド2: サービス -->
+            <div class="carousel-slide">
+                <div class="grid">
+                    <div class="grid-item">
+                        <div class="grid-item-icon">💳</div>
+                        <div class="grid-item-title">決済</div>
+                        <div class="grid-item-description">お支払い管理</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🛍️</div>
+                        <div class="grid-item-title">ショップ</div>
+                        <div class="grid-item-description">商品を探す</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">📦</div>
+                        <div class="grid-item-title">配送</div>
+                        <div class="grid-item-description">配送状況確認</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🎫</div>
+                        <div class="grid-item-title">チケット</div>
+                        <div class="grid-item-description">予約・購入</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🏨</div>
+                        <div class="grid-item-title">予約</div>
+                        <div class="grid-item-description">ホテル・レストラン</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🎮</div>
+                        <div class="grid-item-title">エンタメ</div>
+                        <div class="grid-item-description">ゲーム・動画</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スライド3: 設定 -->
+            <div class="carousel-slide">
+                <div class="grid">
+                    <div class="grid-item">
+                        <div class="grid-item-icon">👤</div>
+                        <div class="grid-item-title">プロフィール</div>
+                        <div class="grid-item-description">個人情報編集</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🔐</div>
+                        <div class="grid-item-title">セキュリティ</div>
+                        <div class="grid-item-description">パスワード変更</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🌙</div>
+                        <div class="grid-item-title">テーマ</div>
+                        <div class="grid-item-description">ダークモード</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🔔</div>
+                        <div class="grid-item-title">通知設定</div>
+                        <div class="grid-item-description">プッシュ通知</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">🌐</div>
+                        <div class="grid-item-title">言語</div>
+                        <div class="grid-item-description">日本語</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-item-icon">❓</div>
+                        <div class="grid-item-title">ヘルプ</div>
+                        <div class="grid-item-description">サポート</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="page" id="page-profile">
-    <div class="card">
-      <h3>👤 プロフィール画面</h3>
-      <p>ユーザー情報やアカウント設定がここに入ります。</p>
+    <!-- インジケーター -->
+    <div class="indicators" id="indicators">
+        <div class="indicator active"></div>
+        <div class="indicator"></div>
+        <div class="indicator"></div>
     </div>
-  </div>
-</main>
 
-<!-- ── ボトムナビ（3等分） ── -->
-<nav>
-  <button class="active" data-page="home" data-title="ホーム">
-    <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
-    ホーム
-  </button>
-  <button data-page="search" data-title="検索">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    検索
-  </button>
-  <button data-page="profile" data-title="プロフィール">
-    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    プロフィール
-  </button>
-</nav>
+    <script>
+        // 要素の取得
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const carouselWrapper = document.getElementById('carouselWrapper');
+        const carouselContainer = document.getElementById('carouselContainer');
+        const indicators = document.querySelectorAll('.indicator');
+        
+        let currentIndex = 0;
+        let startX = 0;
+        let isDragging = false;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
 
-<script>
-  const buttons = document.querySelectorAll('nav button');
-  const pages   = document.querySelectorAll('.page');
-  const header  = document.getElementById('headerTitle');
+        // タブボタンのクリックイベント
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const index = parseInt(button.dataset.index);
+                goToSlide(index);
+            });
+        });
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // ボタンのアクティブ切替
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+        // スライドに移動
+        function goToSlide(index) {
+            currentIndex = index;
+            const translateX = -index * 100;
+            carouselWrapper.style.transform = `translateX(${translateX}%)`;
+            
+            // タブボタンの状態更新
+            tabButtons.forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            
+            // インジケーターの状態更新
+            indicators.forEach((ind, i) => {
+                ind.classList.toggle('active', i === index);
+            });
+        }
 
-      // ページ切替
-      const target = btn.dataset.page;
-      pages.forEach(p => {
-        p.classList.remove('active');
-        if (p.id === `page-${target}`) p.classList.add('active');
-      });
+        // タッチイベント（スワイプ対応）
+        carouselContainer.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            carouselWrapper.style.transition = 'none';
+        });
 
-      // ヘッダー更新
-      header.textContent = btn.dataset.title;
-    });
-  });
-</script>
+        carouselContainer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            
+            const currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+            currentTranslate = prevTranslate + diff;
+            
+            const translatePercent = (currentTranslate / window.innerWidth) * 100;
+            carouselWrapper.style.transform = `translateX(calc(-${currentIndex * 100}% + ${translatePercent}%))`;
+        });
 
+        carouselContainer.addEventListener('touchend', (e) => {
+            isDragging = false;
+            carouselWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            const movedBy = currentTranslate - prevTranslate;
+            
+            // スワイプ判定（50px以上移動した場合）
+            if (movedBy < -50 && currentIndex < tabButtons.length - 1) {
+                currentIndex++;
+            } else if (movedBy > 50 && currentIndex > 0) {
+                currentIndex--;
+            }
+            
+            goToSlide(currentIndex);
+            prevTranslate = -currentIndex * window.innerWidth;
+            currentTranslate = prevTranslate;
+        });
+
+        // マウスイベント（デスクトップでのテスト用）
+        carouselContainer.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            isDragging = true;
+            carouselWrapper.style.transition = 'none';
+        });
+
+        carouselContainer.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const currentX = e.clientX;
+            const diff = currentX - startX;
+            currentTranslate = prevTranslate + diff;
+            
+            const translatePercent = (currentTranslate / window.innerWidth) * 100;
+            carouselWrapper.style.transform = `translateX(calc(-${currentIndex * 100}% + ${translatePercent}%))`;
+        });
+
+        carouselContainer.addEventListener('mouseup', () => {
+            isDragging = false;
+            carouselWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            const movedBy = currentTranslate - prevTranslate;
+            
+            if (movedBy < -50 && currentIndex < tabButtons.length - 1) {
+                currentIndex++;
+            } else if (movedBy > 50 && currentIndex > 0) {
+                currentIndex--;
+            }
+            
+            goToSlide(currentIndex);
+            prevTranslate = -currentIndex * window.innerWidth;
+            currentTranslate = prevTranslate;
+        });
+
+        carouselContainer.addEventListener('mouseleave', () => {
+            if (isDragging) {
+                isDragging = false;
+                carouselWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                goToSlide(currentIndex);
+            }
+        });
+
+        // グリッドアイテムのクリックイベント
+        document.querySelectorAll('.grid-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const title = item.querySelector('.grid-item-title').textContent;
+                alert(`「${title}」がタップされました`);
+            });
+        });
+    </script>
 </body>
 </html>
