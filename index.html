@@ -6,15 +6,15 @@
     <title>モバイルページ</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; background-color: #e8e8e8; max-width: 100%; overflow-x: hidden; }
+        body { font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; background-color: #ffffff; max-width: 100%; overflow-x: hidden; }
         @media (min-width: 768px) { body { display: flex; flex-direction: column; align-items: center; } .header-grid, .main-tabs-container, .carousel-container { max-width: 768px; } .header-grid { width: 768px; } }
-        .header-grid { width: 100vw; height: 75vw; background: linear-gradient(135deg, #ffffff 0%, #d1d1d1 100%); display: flex; justify-content: center; align-items: flex-end; padding-bottom: 30px; position: relative; }
-        .vertical-title { writing-mode: vertical-rl; font-size: 38px; color: #050505; font-weight: bold; letter-spacing: 0.1em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); transition: opacity 0.3s ease, filter 0.8s ease-in-out; }
-        @media (min-width: 768px) { .vertical-title { font-size: 56px; } }
-        @media (min-width: 1024px) { .vertical-title { font-size: 75px; } .header-grid { height: 60vw; max-height: 600px; } }
+        .header-grid { width: 100vw; height: 75vw; background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%); display: flex; justify-content: center; align-items: flex-end; padding-bottom: 30px; position: relative; }
+        .vertical-title { writing-mode: vertical-rl; font-size: 49px; color: #000000; font-weight: 100; letter-spacing: 0.1em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); transition: opacity 0.3s ease, filter 0.8s ease-in-out; }
+        @media (min-width: 768px) { .vertical-title { font-size: 73px; } }
+        @media (min-width: 1024px) { .vertical-title { font-size: 98px; } .header-grid { height: 60vw; max-height: 600px; } }
         .main-tabs-container { display: flex; background-color: white; border-bottom: 2px solid #e0e0e0; }
         .main-tab { flex: 1; padding: 16px; text-align: center; font-size: 32px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; background-color: white; }
-        .main-tab.active { color: #666666; border-bottom-color: #666666; background-color: #f9f9ff; }
+        .main-tab.active { color: #649de8; border-bottom-color: #649de8; background-color: #f9f9ff; }
         .main-tab:hover { background-color: #f5f5f5; }
         .carousel-container { position: relative; background-color: white; }
         .carousel-wrapper { display: flex; }
@@ -23,7 +23,7 @@
         .subtabs-container { display: flex; background: white; padding: 16px 20px; gap: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; border-bottom: 1px solid #f0f0f0; }
         .subtabs-container::-webkit-scrollbar { display: none; }
         .subtab { padding: 20px 48px; border-radius: 0px; background: #f0f0f0; color: #666; font-size: 28px; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0; }
-        .subtab.active { background: #666666; color: white; box-shadow: 0 2px 8px #6666664d; }
+        .subtab.active { background: #649de8; color: white; box-shadow: 0 2px 8px #649de84d; }
         .subtab:active { transform: scale(0.95); }
         .subtab-content-wrapper { background: white; }
         .subtab-content { display: none; padding: 24px 20px; animation: fadeIn 0.3s ease; }
@@ -43,7 +43,7 @@
         .list-arrow { color: #ccc; font-size: 48px; margin-left: 8px; }
         .carousel-indicators { display: flex; justify-content: center; padding: 20px; gap: 10px; background: white; }
         .indicator { width: 10px; height: 10px; border-radius: 50%; background-color: #ddd; cursor: pointer; transition: all 0.3s ease; }
-        .indicator.active { background-color: #666666; width: 30px; border-radius: 5px; }
+        .indicator.active { background-color: #649de8; width: 30px; border-radius: 5px; }
         .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(255,255,255,0.95); border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); z-index: 10; transition: all 0.2s; }
         .carousel-nav:active { transform: translateY(-50%) scale(0.9); }
         .carousel-nav.prev { left: 10px; }
@@ -52,12 +52,12 @@
 </head>
 <body>
     <div class="header-grid">
-        <h1 class="vertical-title" id="main-title">ソレデハ</h1>
+        <h1 class="vertical-title" id="main-title"> ようこそ。</h1>
     </div>
     <div class="main-tabs-container">
-        <div class="main-tab active" data-tab="0" data-title="遊ぶ、">タブ1</div>
-        <div class="main-tab" data-tab="1" data-title="見る。">タブ2</div>
-        <div class="main-tab" data-tab="2" data-title="作る▢">タブ3</div>
+        <div class="main-tab active" data-tab="0" data-title="遊ぶ、">Games</div>
+        <div class="main-tab" data-tab="1" data-title="見る。">Watch</div>
+        <div class="main-tab" data-tab="2" data-title="作る▢">Tools</div>
     </div>
     <div class="carousel-container">
         <button class="carousel-nav prev" onclick="changeMainSlide(-1)">‹</button>
@@ -200,10 +200,10 @@
         // Blur Animation
         (function() {
             const blurConfig = {
-                blurAmount: 12,
-                minInterval: 1300,
-                maxInterval: 5000,
-                duration: 1000
+                blurAmount: 1,
+                minInterval: 300,
+                maxInterval: 1800,
+                duration: 600
             };
             
             function scheduleBlur() {
