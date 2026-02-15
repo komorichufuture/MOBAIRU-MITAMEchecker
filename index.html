@@ -3,775 +3,1240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>モバイルページ完全版</title>
+    <title>モバイルページ エディタ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d27;
+            --bg-tertiary: #242836;
+            --bg-hover: #2d3244;
+            --text-primary: #e8eaf0;
+            --text-secondary: #9ca3b4;
+            --text-muted: #636b80;
+            --accent: #6c8aff;
+            --accent-hover: #8ba3ff;
+            --accent-dim: rgba(108, 138, 255, 0.12);
+            --border: #2a2e3d;
+            --danger: #ff6b6b;
+            --success: #51cf66;
+            --warning: #ffd43b;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif;
-            background-color: #f5f5f5;
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== LAYOUT ===== */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 52px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-logo {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        .toolbar-logo span { color: var(--text-muted); font-weight: 400; }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .main-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 360px;
+            min-width: 360px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab:hover { color: var(--text-secondary); }
+        .sidebar-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .sidebar-content::-webkit-scrollbar { width: 4px; }
+        .sidebar-content::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .sidebar-panel { display: none; }
+        .sidebar-panel.active { display: block; }
+
+        /* ===== FORM ELEMENTS ===== */
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: 'Noto Sans JP', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        textarea { resize: vertical; min-height: 60px; }
+
+        input[type="color"] {
+            width: 36px;
+            height: 36px;
+            padding: 2px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-row input[type="text"] { flex: 1; }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--bg-hover); }
+
+        .btn-danger {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+        .btn-danger:hover { background: rgba(255, 107, 107, 0.25); }
+
+        .btn-success {
+            background: var(--success);
+            color: #1a1d27;
+        }
+        .btn-success:hover { opacity: 0.9; }
+
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+        .btn-block { width: 100%; }
+
+        .btn-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        /* ===== EDITABLE LIST ===== */
+        .edit-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .edit-list-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 10px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .edit-list-item:hover { border-color: var(--accent); }
+        .edit-list-item.selected { border-color: var(--accent); background: var(--accent-dim); }
+
+        .edit-list-item .item-label {
+            flex: 1;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .edit-list-item .item-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .edit-list-item .item-delete {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .edit-list-item .item-delete:hover { color: var(--danger); background: rgba(255,107,107,0.1); }
+
+        /* ===== DETAIL PANEL ===== */
+        .detail-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .detail-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .detail-panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ===== GRADIENT PICKER ===== */
+        .gradient-preview {
+            width: 100%;
+            height: 40px;
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .gradient-colors {
+            display: flex;
+            gap: 8px;
+        }
+
+        .gradient-colors .color-group {
+            flex: 1;
+        }
+
+        .gradient-colors .color-group label {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ===== PREVIEW ===== */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #1e2028;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .preview-frame-wrapper {
+            width: 390px;
+            height: 100%;
+            max-height: 844px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.05);
+            position: relative;
+            background: white;
+        }
+
+        .preview-frame-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .device-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* ===== EMOJI PICKER ===== */
+        .emoji-picker-trigger {
+            width: 40px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-top: 6px;
+        }
+
+        .emoji-grid span {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .emoji-grid span:hover { background: var(--bg-hover); }
+
+        /* ===== PRESET COLORS ===== */
+        .preset-colors {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .preset-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .preset-color:hover { transform: scale(1.1); }
+        .preset-color.selected { border-color: white; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .sidebar { width: 300px; min-width: 300px; }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .preview-area::-webkit-scrollbar { width: 6px; }
+        .preview-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        .tab-drag-handle {
+            cursor: grab;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 0 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="toolbar-logo">PageForge <span>Editor</span></div>
+        </div>
+        <div class="toolbar-actions">
+            <button class="btn btn-secondary btn-sm" onclick="resetAll()">リセット</button>
+            <button class="btn btn-secondary btn-sm" onclick="importJSON()">インポート</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportJSON()">JSON保存</button>
+            <button class="btn btn-success btn-sm" onclick="exportHTML()">HTMLエクスポート ↓</button>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-tabs">
+                <div class="sidebar-tab active" data-panel="header">ヘッダー</div>
+                <div class="sidebar-tab" data-panel="tabs">タブ</div>
+                <div class="sidebar-tab" data-panel="content">コンテンツ</div>
+                <div class="sidebar-tab" data-panel="style">スタイル</div>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- HEADER PANEL -->
+                <div class="sidebar-panel active" id="panel-header">
+                    <div class="section">
+                        <div class="section-title">📝 ヘッダータイトル</div>
+                        <div class="field">
+                            <label class="field-label">タイトルテキスト</label>
+                            <input type="text" id="headerTitle" value="見出し" oninput="updatePreview()">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">フォントサイズ (px)</label>
+                            <input type="number" id="headerFontSize" value="60" min="20" max="200" oninput="updatePreview()">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">文字の向き</label>
+                            <select id="headerWritingMode" onchange="updatePreview()">
+                                <option value="vertical-rl">縦書き（右→左）</option>
+                                <option value="horizontal-tb">横書き</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">🎨 ヘッダー背景</div>
+                        <div class="field">
+                            <label class="field-label">グラデーション プレビュー</label>
+                            <div class="gradient-preview" id="headerGradientPreview"></div>
+                            <div class="gradient-colors">
+                                <div class="color-group">
+                                    <label>開始色</label>
+                                    <div class="color-row">
+                                        <input type="color" id="headerColor1" value="#667eea" oninput="updatePreview()">
+                                        <input type="text" id="headerColor1Text" value="#667eea" oninput="syncColor('headerColor1', this.value); updatePreview()">
+                                    </div>
+                                </div>
+                                <div class="color-group">
+                                    <label>終了色</label>
+                                    <div class="color-row">
+                                        <input type="color" id="headerColor2" value="#764ba2" oninput="updatePreview()">
+                                        <input type="text" id="headerColor2Text" value="#764ba2" oninput="syncColor('headerColor2', this.value); updatePreview()">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field" style="margin-top: 8px;">
+                                <label class="field-label">グラデーション角度 (deg)</label>
+                                <input type="number" id="headerGradientAngle" value="135" min="0" max="360" oninput="updatePreview()">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">プリセット</label>
+                            <div class="preset-colors" id="headerPresets"></div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">📐 ヘッダーサイズ</div>
+                        <div class="field">
+                            <label class="field-label">アスペクト比（高さ = 幅 × ?）</label>
+                            <select id="headerAspect" onchange="updatePreview()">
+                                <option value="0.5625">9:16</option>
+                                <option value="0.75" selected>3:4</option>
+                                <option value="1">1:1</option>
+                                <option value="0.5">1:2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABS PANEL -->
+                <div class="sidebar-panel" id="panel-tabs">
+                    <div class="section">
+                        <div class="section-title">📑 メインタブ</div>
+                        <div class="edit-list" id="mainTabsList"></div>
+                        <div class="btn-row">
+                            <button class="btn btn-primary btn-sm" onclick="addMainTab()">＋ タブ追加</button>
+                        </div>
+                    </div>
+
+                    <div id="mainTabDetail"></div>
+                </div>
+
+                <!-- CONTENT PANEL -->
+                <div class="sidebar-panel" id="panel-content">
+                    <div class="section">
+                        <div class="section-title">📋 コンテンツ編集</div>
+                        <div class="field">
+                            <label class="field-label">メインタブを選択</label>
+                            <select id="contentMainTabSelect" onchange="onContentMainTabChange()"></select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">サブタブを選択</label>
+                            <select id="contentSubTabSelect" onchange="onContentSubTabChange()"></select>
+                        </div>
+                    </div>
+
+                    <div id="contentEditor"></div>
+                </div>
+
+                <!-- STYLE PANEL -->
+                <div class="sidebar-panel" id="panel-style">
+                    <div class="section">
+                        <div class="section-title">🎯 アクセントカラー</div>
+                        <div class="field">
+                            <div class="color-row">
+                                <input type="color" id="accentColor" value="#667eea" oninput="updatePreview()">
+                                <input type="text" id="accentColorText" value="#667eea" oninput="syncColor('accentColor', this.value); updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">🔤 フォント</div>
+                        <div class="field">
+                            <label class="field-label">フォントファミリー</label>
+                            <select id="fontFamily" onchange="updatePreview()">
+                                <option value="'Hiragino Mincho ProN', 'Yu Mincho', serif">明朝体</option>
+                                <option value="'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif">ゴシック体</option>
+                                <option value="'Noto Sans JP', sans-serif">Noto Sans JP</option>
+                                <option value="'Noto Serif JP', serif">Noto Serif JP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">📱 ページ設定</div>
+                        <div class="field">
+                            <label class="field-label">背景色</label>
+                            <div class="color-row">
+                                <input type="color" id="pageBgColor" value="#f5f5f5" oninput="updatePreview()">
+                                <input type="text" id="pageBgColorText" value="#f5f5f5" oninput="syncColor('pageBgColor', this.value); updatePreview()">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">カードの角丸 (px)</label>
+                            <input type="number" id="cardBorderRadius" value="12" min="0" max="30" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="preview-area">
+            <div class="preview-frame-wrapper">
+                <iframe id="previewFrame"></iframe>
+            </div>
+            <div class="device-label">390 × 844 — iPhone 14 Pro</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== DATA MODEL =====
+let data = {
+    header: {
+        title: '見出し',
+        fontSize: 60,
+        writingMode: 'vertical-rl',
+        color1: '#667eea',
+        color2: '#764ba2',
+        gradientAngle: 135,
+        aspect: 0.75
+    },
+    accent: '#667eea',
+    fontFamily: "'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif",
+    pageBg: '#f5f5f5',
+    cardRadius: 12,
+    mainTabs: [
+        {
+            name: 'タブ１',
+            titleText: '見出し',
+            subTabs: [
+                {
+                    name: 'すべて',
+                    card: { title: 'すべてのコンテンツ', text: 'ここには全カテゴリーのコンテンツが表示されます。', colorClass: 'color-orange' },
+                    items: [
+                        { emoji: '📰', title: '最新記事タイトル', subtitle: '2026年2月15日' },
+                        { emoji: '🎯', title: '注目のイベント', subtitle: '2026年2月20日開催' }
+                    ]
+                },
+                {
+                    name: 'ニュース',
+                    card: { title: 'ニュース', text: '最新のニュースや業界動向をお届けします。', colorClass: 'color-blue' },
+                    items: [
+                        { emoji: '📢', title: '速報ニュース', subtitle: '本日更新' }
+                    ]
+                }
+            ]
+        },
+        {
+            name: 'タブ２',
+            titleText: '人気',
+            subTabs: [
+                {
+                    name: '人気',
+                    card: { title: '人気コンテンツ', text: '多くの方に読まれている人気の記事をご紹介します。', colorClass: 'color-blue' },
+                    items: [
+                        { emoji: '🔥', title: '今週の人気記事TOP3', subtitle: '閲覧数 15,234' },
+                        { emoji: '⭐', title: '話題の新サービス', subtitle: '閲覧数 12,890' }
+                    ]
+                },
+                {
+                    name: 'おすすめ',
+                    card: { title: 'おすすめコンテンツ', text: 'あなたにぴったりのコンテンツを厳選してお届けします。', colorClass: 'color-green' },
+                    items: [
+                        { emoji: '💎', title: '編集部おすすめ特集', subtitle: '厳選コンテンツ' }
+                    ]
+                }
+            ]
+        },
+        {
+            name: 'タブ３',
+            titleText: '設定',
+            subTabs: [
+                {
+                    name: '設定',
+                    card: { title: '基本設定', text: 'アプリの表示や動作に関する設定を変更できます。', colorClass: 'color-green' },
+                    items: [
+                        { emoji: '🎨', title: 'テーマ設定', subtitle: 'ライト / ダーク' },
+                        { emoji: '🌐', title: '言語設定', subtitle: '日本語' }
+                    ]
+                },
+                {
+                    name: '通知',
+                    card: { title: '通知設定', text: '受け取りたい通知の種類を選択できます。', colorClass: 'color-orange' },
+                    items: [
+                        { emoji: '🔔', title: 'プッシュ通知', subtitle: 'オン' }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
+const EMOJIS = ['📰','🎯','🔥','⭐','💎','🎁','🆕','📱','🏆','📊','📢','💡','📚','🗂️','🎨','🌐','🔔','📧','👤','🔒','❓','💬','📝','🎵','🏠','💰','🛒','✈️','🍽️','⚙️','❤️','🌟'];
+
+const CARD_COLORS = [
+    { name: 'オレンジ', class: 'color-orange', gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+    { name: 'ブルー', class: 'color-blue', gradient: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)' },
+    { name: 'グリーン', class: 'color-green', gradient: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)' },
+    { name: 'ピンク', class: 'color-pink', gradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)' },
+    { name: 'パープル', class: 'color-purple', gradient: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)' },
+    { name: 'デフォルト', class: '', gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }
+];
+
+const HEADER_PRESETS = [
+    ['#667eea', '#764ba2'],
+    ['#f093fb', '#f5576c'],
+    ['#4facfe', '#00f2fe'],
+    ['#43e97b', '#38f9d7'],
+    ['#fa709a', '#fee140'],
+    ['#a18cd1', '#fbc2eb'],
+    ['#fccb90', '#d57eeb'],
+    ['#ff9a9e', '#fecfef'],
+    ['#2b5876', '#4e4376'],
+    ['#0c3483', '#a2b6df'],
+    ['#1a1a2e', '#16213e'],
+    ['#ee9ca7', '#ffdde1']
+];
+
+let selectedMainTab = 0;
+let selectedContentMainTab = 0;
+let selectedContentSubTab = 0;
+
+// ===== INIT =====
+function init() {
+    setupSidebarTabs();
+    renderHeaderPresets();
+    renderMainTabsList();
+    renderContentSelectors();
+    syncFormFromData();
+    updatePreview();
+}
+
+function setupSidebarTabs() {
+    document.querySelectorAll('.sidebar-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+        });
+    });
+}
+
+// ===== HEADER PRESETS =====
+function renderHeaderPresets() {
+    const container = document.getElementById('headerPresets');
+    container.innerHTML = HEADER_PRESETS.map((p, i) =>
+        `<div class="preset-color" style="background: linear-gradient(135deg, ${p[0]}, ${p[1]})" onclick="applyHeaderPreset(${i})"></div>`
+    ).join('');
+}
+
+function applyHeaderPreset(index) {
+    const [c1, c2] = HEADER_PRESETS[index];
+    document.getElementById('headerColor1').value = c1;
+    document.getElementById('headerColor1Text').value = c1;
+    document.getElementById('headerColor2').value = c2;
+    document.getElementById('headerColor2Text').value = c2;
+    updatePreview();
+}
+
+// ===== COLOR SYNC =====
+function syncColor(inputId, value) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        document.getElementById(inputId).value = value;
+    }
+}
+
+// ===== MAIN TABS =====
+function renderMainTabsList() {
+    const list = document.getElementById('mainTabsList');
+    list.innerHTML = data.mainTabs.map((tab, i) =>
+        `<div class="edit-list-item ${i === selectedMainTab ? 'selected' : ''}" onclick="selectMainTab(${i})">
+            <span class="tab-drag-handle">⠿</span>
+            <span class="item-label">${tab.name}</span>
+            <span class="item-badge">${tab.subTabs.length} サブ</span>
+            <span class="item-delete" onclick="event.stopPropagation(); deleteMainTab(${i})">×</span>
+        </div>`
+    ).join('');
+    renderMainTabDetail();
+}
+
+function selectMainTab(index) {
+    selectedMainTab = index;
+    renderMainTabsList();
+}
+
+function addMainTab() {
+    const n = data.mainTabs.length + 1;
+    data.mainTabs.push({
+        name: `タブ${n}`,
+        titleText: `タイトル${n}`,
+        subTabs: [{
+            name: '新規',
+            card: { title: '新しいコンテンツ', text: 'コンテンツの説明文を入力してください。', colorClass: '' },
+            items: []
+        }]
+    });
+    selectedMainTab = data.mainTabs.length - 1;
+    renderMainTabsList();
+    renderContentSelectors();
+    updatePreview();
+}
+
+function deleteMainTab(index) {
+    if (data.mainTabs.length <= 1) return alert('最低1つのタブが必要です');
+    data.mainTabs.splice(index, 1);
+    if (selectedMainTab >= data.mainTabs.length) selectedMainTab = data.mainTabs.length - 1;
+    renderMainTabsList();
+    renderContentSelectors();
+    updatePreview();
+}
+
+function renderMainTabDetail() {
+    const tab = data.mainTabs[selectedMainTab];
+    if (!tab) return;
+
+    const detail = document.getElementById('mainTabDetail');
+    detail.innerHTML = `
+        <div class="detail-panel">
+            <div class="detail-panel-header">
+                <span class="detail-panel-title">タブ設定: ${tab.name}</span>
+            </div>
+            <div class="field">
+                <label class="field-label">タブ名</label>
+                <input type="text" value="${tab.name}" oninput="data.mainTabs[${selectedMainTab}].name = this.value; renderMainTabsList(); renderContentSelectors(); updatePreview()">
+            </div>
+            <div class="field">
+                <label class="field-label">ヘッダーに表示するタイトル</label>
+                <input type="text" value="${tab.titleText}" oninput="data.mainTabs[${selectedMainTab}].titleText = this.value; updatePreview()">
+            </div>
+            <div class="section" style="margin-top: 16px;">
+                <div class="section-title">サブタブ</div>
+                <div class="edit-list">
+                    ${tab.subTabs.map((st, j) =>
+                        `<div class="edit-list-item">
+                            <span class="item-label">${st.name}</span>
+                            <span class="item-delete" onclick="deleteSubTab(${selectedMainTab}, ${j})">×</span>
+                        </div>`
+                    ).join('')}
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary btn-sm" onclick="addSubTab(${selectedMainTab})">＋ サブタブ追加</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function addSubTab(mainIndex) {
+    data.mainTabs[mainIndex].subTabs.push({
+        name: '新規タブ',
+        card: { title: '新しいセクション', text: '説明文を入力してください。', colorClass: '' },
+        items: []
+    });
+    renderMainTabsList();
+    renderContentSelectors();
+    updatePreview();
+}
+
+function deleteSubTab(mainIndex, subIndex) {
+    if (data.mainTabs[mainIndex].subTabs.length <= 1) return alert('最低1つのサブタブが必要です');
+    data.mainTabs[mainIndex].subTabs.splice(subIndex, 1);
+    renderMainTabsList();
+    renderContentSelectors();
+    updatePreview();
+}
+
+// ===== CONTENT EDITING =====
+function renderContentSelectors() {
+    const mainSelect = document.getElementById('contentMainTabSelect');
+    mainSelect.innerHTML = data.mainTabs.map((t, i) =>
+        `<option value="${i}">${t.name}</option>`
+    ).join('');
+    mainSelect.value = selectedContentMainTab;
+    onContentMainTabChange();
+}
+
+function onContentMainTabChange() {
+    selectedContentMainTab = parseInt(document.getElementById('contentMainTabSelect').value);
+    const subSelect = document.getElementById('contentSubTabSelect');
+    const tab = data.mainTabs[selectedContentMainTab];
+    if (!tab) return;
+    subSelect.innerHTML = tab.subTabs.map((st, i) =>
+        `<option value="${i}">${st.name}</option>`
+    ).join('');
+    selectedContentSubTab = 0;
+    subSelect.value = 0;
+    onContentSubTabChange();
+}
+
+function onContentSubTabChange() {
+    selectedContentSubTab = parseInt(document.getElementById('contentSubTabSelect').value);
+    renderContentEditor();
+}
+
+function renderContentEditor() {
+    const tab = data.mainTabs[selectedContentMainTab];
+    if (!tab) return;
+    const sub = tab.subTabs[selectedContentSubTab];
+    if (!sub) return;
+
+    const mi = selectedContentMainTab;
+    const si = selectedContentSubTab;
+
+    const colorOptions = CARD_COLORS.map(c =>
+        `<option value="${c.class}" ${sub.card.colorClass === c.class ? 'selected' : ''}>${c.name}</option>`
+    ).join('');
+
+    let html = `
+        <div class="section">
+            <div class="section-title">🏷️ サブタブ名</div>
+            <div class="field">
+                <input type="text" value="${sub.name}" oninput="updateSubTabName(${mi}, ${si}, this.value)">
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">🃏 コンテンツカード</div>
+            <div class="field">
+                <label class="field-label">カードタイトル</label>
+                <input type="text" value="${sub.card.title}" oninput="data.mainTabs[${mi}].subTabs[${si}].card.title = this.value; updatePreview()">
+            </div>
+            <div class="field">
+                <label class="field-label">カード説明文</label>
+                <textarea oninput="data.mainTabs[${mi}].subTabs[${si}].card.text = this.value; updatePreview()">${sub.card.text}</textarea>
+            </div>
+            <div class="field">
+                <label class="field-label">カード色</label>
+                <select onchange="data.mainTabs[${mi}].subTabs[${si}].card.colorClass = this.value; updatePreview()">
+                    ${colorOptions}
+                </select>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">📋 リストアイテム</div>
+            <div class="edit-list" id="contentItemsList">
+                ${sub.items.map((item, k) => `
+                    <div class="edit-list-item" onclick="editContentItem(${mi}, ${si}, ${k})">
+                        <span style="font-size:18px; flex-shrink:0;">${item.emoji}</span>
+                        <span class="item-label">${item.title}</span>
+                        <span class="item-delete" onclick="event.stopPropagation(); deleteContentItem(${mi}, ${si}, ${k})">×</span>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary btn-sm" onclick="addContentItem(${mi}, ${si})">＋ アイテム追加</button>
+            </div>
+        </div>
+        <div id="contentItemDetail"></div>
+    `;
+
+    document.getElementById('contentEditor').innerHTML = html;
+}
+
+function updateSubTabName(mi, si, value) {
+    data.mainTabs[mi].subTabs[si].name = value;
+    renderMainTabsList();
+    renderContentSelectors();
+    document.getElementById('contentMainTabSelect').value = mi;
+    onContentMainTabChange();
+    document.getElementById('contentSubTabSelect').value = si;
+    selectedContentSubTab = si;
+    renderContentEditor();
+    updatePreview();
+}
+
+function addContentItem(mi, si) {
+    data.mainTabs[mi].subTabs[si].items.push({
+        emoji: '📄',
+        title: '新しいアイテム',
+        subtitle: 'サブテキスト'
+    });
+    renderContentEditor();
+    updatePreview();
+}
+
+function deleteContentItem(mi, si, ki) {
+    data.mainTabs[mi].subTabs[si].items.splice(ki, 1);
+    renderContentEditor();
+    updatePreview();
+}
+
+function editContentItem(mi, si, ki) {
+    const item = data.mainTabs[mi].subTabs[si].items[ki];
+    const detail = document.getElementById('contentItemDetail');
+    const emojiGrid = EMOJIS.map(e =>
+        `<span onclick="setItemEmoji(${mi}, ${si}, ${ki}, '${e}')">${e}</span>`
+    ).join('');
+
+    detail.innerHTML = `
+        <div class="detail-panel">
+            <div class="detail-panel-header">
+                <span class="detail-panel-title">${item.emoji} アイテム編集</span>
+            </div>
+            <div class="field">
+                <label class="field-label">アイコン絵文字</label>
+                <div class="emoji-grid">${emojiGrid}</div>
+            </div>
+            <div class="field">
+                <label class="field-label">タイトル</label>
+                <input type="text" value="${item.title}" oninput="data.mainTabs[${mi}].subTabs[${si}].items[${ki}].title = this.value; updatePreview()">
+            </div>
+            <div class="field">
+                <label class="field-label">サブテキスト</label>
+                <input type="text" value="${item.subtitle}" oninput="data.mainTabs[${mi}].subTabs[${si}].items[${ki}].subtitle = this.value; updatePreview()">
+            </div>
+        </div>
+    `;
+}
+
+function setItemEmoji(mi, si, ki, emoji) {
+    data.mainTabs[mi].subTabs[si].items[ki].emoji = emoji;
+    renderContentEditor();
+    editContentItem(mi, si, ki);
+    updatePreview();
+}
+
+// ===== SYNC FORM → DATA =====
+function syncFormFromData() {
+    document.getElementById('headerTitle').value = data.header.title;
+    document.getElementById('headerFontSize').value = data.header.fontSize;
+    document.getElementById('headerWritingMode').value = data.header.writingMode;
+    document.getElementById('headerColor1').value = data.header.color1;
+    document.getElementById('headerColor1Text').value = data.header.color1;
+    document.getElementById('headerColor2').value = data.header.color2;
+    document.getElementById('headerColor2Text').value = data.header.color2;
+    document.getElementById('headerGradientAngle').value = data.header.gradientAngle;
+    document.getElementById('headerAspect').value = data.header.aspect;
+    document.getElementById('accentColor').value = data.accent;
+    document.getElementById('accentColorText').value = data.accent;
+    document.getElementById('pageBgColor').value = data.pageBg;
+    document.getElementById('pageBgColorText').value = data.pageBg;
+    document.getElementById('cardBorderRadius').value = data.cardRadius;
+}
+
+function syncDataFromForm() {
+    data.header.title = document.getElementById('headerTitle').value;
+    data.header.fontSize = parseInt(document.getElementById('headerFontSize').value) || 60;
+    data.header.writingMode = document.getElementById('headerWritingMode').value;
+    data.header.color1 = document.getElementById('headerColor1').value;
+    data.header.color2 = document.getElementById('headerColor2').value;
+    data.header.gradientAngle = parseInt(document.getElementById('headerGradientAngle').value) || 135;
+    data.header.aspect = parseFloat(document.getElementById('headerAspect').value) || 0.75;
+    data.accent = document.getElementById('accentColor').value;
+    data.fontFamily = document.getElementById('fontFamily').value;
+    data.pageBg = document.getElementById('pageBgColor').value;
+    data.cardRadius = parseInt(document.getElementById('cardBorderRadius').value) || 12;
+
+    // sync text inputs
+    document.getElementById('headerColor1Text').value = data.header.color1;
+    document.getElementById('headerColor2Text').value = data.header.color2;
+    document.getElementById('accentColorText').value = data.accent;
+    document.getElementById('pageBgColorText').value = data.pageBg;
+
+    // gradient preview
+    document.getElementById('headerGradientPreview').style.background =
+        `linear-gradient(${data.header.gradientAngle}deg, ${data.header.color1}, ${data.header.color2})`;
+}
+
+// ===== GENERATE HTML =====
+function generateHTML() {
+    syncDataFromForm();
+    const d = data;
+    const accent = d.accent;
+
+    // Build slides HTML
+    let slidesHTML = '';
+    let mainTabsHTML = '';
+    let indicatorsHTML = '';
+
+    d.mainTabs.forEach((tab, i) => {
+        mainTabsHTML += `        <div class="main-tab${i === 0 ? ' active' : ''}" data-tab="${i}" data-title="${escapeHtml(tab.titleText)}">${escapeHtml(tab.name)}</div>\n`;
+        indicatorsHTML += `            <div class="indicator${i === 0 ? ' active' : ''}" data-slide="${i}"></div>\n`;
+
+        let subTabsHTML = '';
+        let subContentsHTML = '';
+
+        tab.subTabs.forEach((st, j) => {
+            subTabsHTML += `                    <div class="subtab${j === 0 ? ' active' : ''}" data-slide="${i}" data-subtab="${j}">${escapeHtml(st.name)}</div>\n`;
+
+            let itemsHTML = '';
+            st.items.forEach(item => {
+                itemsHTML += `                            <div class="content-list-item">
+                                <div class="list-icon">${item.emoji}</div>
+                                <div class="list-content">
+                                    <div class="list-title">${escapeHtml(item.title)}</div>
+                                    <div class="list-subtitle">${escapeHtml(item.subtitle)}</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>\n`;
+            });
+
+            subContentsHTML += `                    <div class="subtab-content${j === 0 ? ' active' : ''}" data-slide="${i}" data-content="${j}">
+                        <div class="content-card ${st.card.colorClass}">
+                            <div class="content-card-title">${escapeHtml(st.card.title)}</div>
+                            <div class="content-card-text">${escapeHtml(st.card.text)}</div>
+                        </div>
+                        <div class="content-list">
+${itemsHTML}                        </div>
+                    </div>\n`;
+        });
+
+        slidesHTML += `            <div class="carousel-slide${i === 0 ? ' active' : ''}">
+                <div class="subtabs-container" id="subtabs-${i}">
+${subTabsHTML}                </div>
+                <div class="subtab-content-wrapper">
+${subContentsHTML}                </div>
+            </div>\n`;
+    });
+
+    return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モバイルページ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: ${d.fontFamily};
+            background-color: ${d.pageBg};
             max-width: 100%;
             overflow-x: hidden;
         }
-
-        /* PC表示時のコンテナ制限 */
         @media (min-width: 768px) {
-            body {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .header-grid,
-            .main-tabs-container,
-            .carousel-container {
-                max-width: 768px;
-            }
-
-            .header-grid {
-                width: 768px;
-            }
+            body { display: flex; flex-direction: column; align-items: center; }
+            .header-grid, .main-tabs-container, .carousel-container { max-width: 768px; }
+            .header-grid { width: 768px; }
         }
-
-        /* 上段の横長グリッド（縦3:横4） */
         .header-grid {
             width: 100vw;
-            height: 75vw;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: ${d.header.aspect * 100}vw;
+            background: linear-gradient(${d.header.gradientAngle}deg, ${d.header.color1} 0%, ${d.header.color2} 100%);
             display: flex;
             justify-content: center;
             align-items: flex-end;
             padding-bottom: 30px;
             position: relative;
         }
-
-        /* 縦書きタイトル */
         .vertical-title {
-            writing-mode: vertical-rl;
-            font-size: 60px;
+            writing-mode: ${d.header.writingMode};
+            font-size: ${d.header.fontSize}px;
             color: white;
             font-weight: bold;
             letter-spacing: 0.1em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             transition: opacity 0.3s ease;
         }
-
-        /* タブレット以上（768px以上） */
-        @media (min-width: 768px) {
-            .vertical-title {
-                font-size: 100px;
-            }
-        }
-
-        /* PC（1024px以上） */
+        @media (min-width: 768px) { .vertical-title { font-size: ${Math.round(d.header.fontSize * 1.5)}px; } }
         @media (min-width: 1024px) {
-            .vertical-title {
-                font-size: 140px;
-            }
-
-            .header-grid {
-                height: 60vw;
-                max-height: 600px;
-            }
+            .vertical-title { font-size: ${Math.round(d.header.fontSize * 2)}px; }
+            .header-grid { height: 60vw; max-height: 600px; }
         }
-
-        /* 大画面PC（1440px以上） */
-        @media (min-width: 1440px) {
-            .vertical-title {
-                font-size: 160px;
-            }
-
-            .header-grid {
-                max-height: 700px;
-            }
-        }
-
-        /* メインタブコンテナ */
-        .main-tabs-container {
-            display: flex;
-            background-color: white;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
+        .main-tabs-container { display: flex; background-color: white; border-bottom: 2px solid #e0e0e0; }
         .main-tab {
-            flex: 1;
-            padding: 16px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            background-color: white;
+            flex: 1; padding: 16px; text-align: center; font-size: 16px; font-weight: bold;
+            cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; background-color: white;
         }
-
-        .main-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            background-color: #f9f9ff;
-        }
-
-        .main-tab:hover {
-            background-color: #f5f5f5;
-        }
-
-        /* カルーセルコンテナ */
-        .carousel-container {
-            position: relative;
-            background-color: white;
-        }
-
-        .carousel-wrapper {
-            display: flex;
-        }
-
-        .carousel-slide {
-            min-width: 100%;
-            display: none;
-        }
-
-        .carousel-slide.active {
-            display: block;
-        }
-
-        /* サブタブ（ピル型） */
+        .main-tab.active { color: ${accent}; border-bottom-color: ${accent}; background-color: #f9f9ff; }
+        .main-tab:hover { background-color: #f5f5f5; }
+        .carousel-container { position: relative; background-color: white; }
+        .carousel-wrapper { display: flex; }
+        .carousel-slide { min-width: 100%; display: none; }
+        .carousel-slide.active { display: block; }
         .subtabs-container {
-            display: flex;
-            background: white;
-            padding: 16px 20px;
-            gap: 10px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            border-bottom: 1px solid #f0f0f0;
+            display: flex; background: white; padding: 16px 20px; gap: 10px;
+            overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; border-bottom: 1px solid #f0f0f0;
         }
-
-        .subtabs-container::-webkit-scrollbar {
-            display: none;
-        }
-
+        .subtabs-container::-webkit-scrollbar { display: none; }
         .subtab {
-            padding: 10px 24px;
-            border-radius: 20px;
-            background: #f0f0f0;
-            color: #666;
-            font-size: 14px;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
+            padding: 10px 24px; border-radius: 20px; background: #f0f0f0; color: #666;
+            font-size: 14px; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0;
         }
-
-        .subtab.active {
-            background: #667eea;
-            color: white;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .subtab:active {
-            transform: scale(0.95);
-        }
-
-        /* サブタブコンテンツ */
-        .subtab-content-wrapper {
-            background: white;
-        }
-
-        .subtab-content {
-            display: none;
-            padding: 24px 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .subtab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* コンテンツカード */
+        .subtab.active { background: ${accent}; color: white; box-shadow: 0 2px 8px ${accent}4d; }
+        .subtab:active { transform: scale(0.95); }
+        .subtab-content-wrapper { background: white; }
+        .subtab-content { display: none; padding: 24px 20px; animation: fadeIn 0.3s ease; }
+        .subtab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .content-card {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 12px;
-            padding: 30px 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: ${d.cardRadius}px; padding: 30px 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
-        .content-card-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 12px;
-        }
-
-        .content-card-text {
-            font-size: 15px;
-            color: #555;
-            line-height: 1.8;
-        }
-
-        /* コンテンツリスト */
-        .content-list {
-            background: white;
-        }
-
-        .content-list-item {
-            display: flex;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .content-list-item:last-child {
-            border-bottom: none;
-        }
-
+        .content-card-title { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 12px; }
+        .content-card-text { font-size: 15px; color: #555; line-height: 1.8; }
+        .content-list { background: white; }
+        .content-list-item { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+        .content-list-item:last-child { border-bottom: none; }
         .list-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-right: 16px;
-            flex-shrink: 0;
+            width: 50px; height: 50px; background: linear-gradient(135deg, ${accent}, ${d.header.color2});
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-right: 16px; flex-shrink: 0;
         }
-
-        .list-content {
-            flex: 1;
-        }
-
-        .list-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .list-subtitle {
-            font-size: 13px;
-            color: #999;
-        }
-
-        .list-arrow {
-            color: #ccc;
-            font-size: 24px;
-            margin-left: 8px;
-        }
-
-        /* カルーセルインジケーター */
-        .carousel-indicators {
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            gap: 10px;
-            background: white;
-        }
-
-        .indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #ddd;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .indicator.active {
-            background-color: #667eea;
-            width: 30px;
-            border-radius: 5px;
-        }
-
-        /* カルーセルナビゲーションボタン */
+        .list-content { flex: 1; }
+        .list-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 4px; }
+        .list-subtitle { font-size: 13px; color: #999; }
+        .list-arrow { color: #ccc; font-size: 24px; margin-left: 8px; }
+        .carousel-indicators { display: flex; justify-content: center; padding: 20px; gap: 10px; background: white; }
+        .indicator { width: 10px; height: 10px; border-radius: 50%; background-color: #ddd; cursor: pointer; transition: all 0.3s ease; }
+        .indicator.active { background-color: ${accent}; width: 30px; border-radius: 5px; }
         .carousel-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(255, 255, 255, 0.95);
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-            z-index: 10;
-            transition: all 0.2s;
+            position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(255,255,255,0.95);
+            border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); z-index: 10; transition: all 0.2s;
         }
-
-        .carousel-nav:active {
-            transform: translateY(-50%) scale(0.9);
-        }
-
-        .carousel-nav.prev {
-            left: 10px;
-        }
-
-        .carousel-nav.next {
-            right: 10px;
-        }
-
-        /* カラーバリエーション */
-        .color-orange {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-        }
-
-        .color-blue {
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-        }
-
-        .color-green {
-            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-        }
-
-        .color-pink {
-            background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);
-        }
-
-        .color-purple {
-            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-        }
+        .carousel-nav:active { transform: translateY(-50%) scale(0.9); }
+        .carousel-nav.prev { left: 10px; }
+        .carousel-nav.next { right: 10px; }
+        .color-orange { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .color-blue { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+        .color-green { background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); }
+        .color-pink { background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%); }
+        .color-purple { background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); }
     </style>
 </head>
 <body>
-    <!-- 上段の正方形グリッド -->
     <div class="header-grid">
-        <h1 class="vertical-title" id="main-title">見出し</h1>
+        <h1 class="vertical-title" id="main-title">${escapeHtml(d.mainTabs[0]?.titleText || d.header.title)}</h1>
     </div>
 
-    <!-- メインタブ -->
     <div class="main-tabs-container">
-        <div class="main-tab active" data-tab="0" data-title="見出し">タブ１</div>
-        <div class="main-tab" data-tab="1" data-title="人気">タブ２</div>
-        <div class="main-tab" data-tab="2" data-title="設定">タブ３</div>
-    </div>
+${mainTabsHTML}    </div>
 
-    <!-- カルーセル -->
     <div class="carousel-container">
         <button class="carousel-nav prev" onclick="changeMainSlide(-1)">‹</button>
         <button class="carousel-nav next" onclick="changeMainSlide(1)">›</button>
-        
         <div class="carousel-wrapper">
-            <!-- スライド1 -->
-            <div class="carousel-slide active">
-                <!-- サブタブ -->
-                <div class="subtabs-container" id="subtabs-0">
-                    <div class="subtab active" data-slide="0" data-subtab="0">すべて</div>
-                    <div class="subtab" data-slide="0" data-subtab="1">ニュース</div>
-                    <div class="subtab" data-slide="0" data-subtab="2">イベント</div>
-                    <div class="subtab" data-slide="0" data-subtab="3">特集</div>
-                    <div class="subtab" data-slide="0" data-subtab="4">アーカイブ</div>
-                </div>
-
-                <!-- サブタブコンテンツ -->
-                <div class="subtab-content-wrapper">
-                    <div class="subtab-content active" data-slide="0" data-content="0">
-                        <div class="content-card color-orange">
-                            <div class="content-card-title">すべてのコンテンツ</div>
-                            <div class="content-card-text">
-                                ここには全カテゴリーのコンテンツが表示されます。最新情報から過去のアーカイブまで、すべての記事やイベント情報をご覧いただけます。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">📰</div>
-                                <div class="list-content">
-                                    <div class="list-title">最新記事タイトル</div>
-                                    <div class="list-subtitle">2026年2月15日</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🎯</div>
-                                <div class="list-content">
-                                    <div class="list-title">注目のイベント</div>
-                                    <div class="list-subtitle">2026年2月20日開催</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="0" data-content="1">
-                        <div class="content-card color-blue">
-                            <div class="content-card-title">ニュース</div>
-                            <div class="content-card-text">
-                                最新のニュースや業界動向をお届けします。重要な情報をいち早くキャッチできます。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">📢</div>
-                                <div class="list-content">
-                                    <div class="list-title">重要なお知らせ</div>
-                                    <div class="list-subtitle">2026年2月15日 10:00</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🌟</div>
-                                <div class="list-content">
-                                    <div class="list-title">新サービス開始</div>
-                                    <div class="list-subtitle">2026年2月14日 15:30</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="0" data-content="2">
-                        <div class="content-card color-green">
-                            <div class="content-card-title">イベント</div>
-                            <div class="content-card-text">
-                                開催予定のイベントや過去のイベントレポートをご覧いただけます。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">🎪</div>
-                                <div class="list-content">
-                                    <div class="list-title">春の特別イベント</div>
-                                    <div class="list-subtitle">2026年3月1日 13:00〜</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🎨</div>
-                                <div class="list-content">
-                                    <div class="list-title">ワークショップ開催</div>
-                                    <div class="list-subtitle">2026年2月28日 10:00〜</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="0" data-content="3">
-                        <div class="content-card color-pink">
-                            <div class="content-card-title">特集</div>
-                            <div class="content-card-text">
-                                編集部が厳選した特集記事をお届けします。深掘りした内容をじっくりお楽しみください。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">✨</div>
-                                <div class="list-content">
-                                    <div class="list-title">2026年トレンド予測</div>
-                                    <div class="list-subtitle">特集記事</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">💡</div>
-                                <div class="list-content">
-                                    <div class="list-title">成功事例インタビュー</div>
-                                    <div class="list-subtitle">特集シリーズ</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="0" data-content="4">
-                        <div class="content-card color-purple">
-                            <div class="content-card-title">アーカイブ</div>
-                            <div class="content-card-text">
-                                過去のコンテンツを時系列でご覧いただけます。貴重な記録が保管されています。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">📚</div>
-                                <div class="list-content">
-                                    <div class="list-title">2025年総集編</div>
-                                    <div class="list-subtitle">年間アーカイブ</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🗂️</div>
-                                <div class="list-content">
-                                    <div class="list-title">過去の特集一覧</div>
-                                    <div class="list-subtitle">2020年〜2025年</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- スライド2 -->
-            <div class="carousel-slide">
-                <!-- サブタブ -->
-                <div class="subtabs-container" id="subtabs-1">
-                    <div class="subtab active" data-slide="1" data-subtab="0">人気</div>
-                    <div class="subtab" data-slide="1" data-subtab="1">おすすめ</div>
-                    <div class="subtab" data-slide="1" data-subtab="2">新着</div>
-                    <div class="subtab" data-slide="1" data-subtab="3">ランキング</div>
-                </div>
-
-                <!-- サブタブコンテンツ -->
-                <div class="subtab-content-wrapper">
-                    <div class="subtab-content active" data-slide="1" data-content="0">
-                        <div class="content-card color-blue">
-                            <div class="content-card-title">人気コンテンツ</div>
-                            <div class="content-card-text">
-                                多くの方に読まれている人気の記事をご紹介します。トレンドをチェックしましょう。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">🔥</div>
-                                <div class="list-content">
-                                    <div class="list-title">今週の人気記事TOP3</div>
-                                    <div class="list-subtitle">閲覧数 15,234</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">⭐</div>
-                                <div class="list-content">
-                                    <div class="list-title">話題の新サービス</div>
-                                    <div class="list-subtitle">閲覧数 12,890</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="1" data-content="1">
-                        <div class="content-card color-green">
-                            <div class="content-card-title">おすすめコンテンツ</div>
-                            <div class="content-card-text">
-                                あなたにぴったりのコンテンツを編集部が厳選してお届けします。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">💎</div>
-                                <div class="list-content">
-                                    <div class="list-title">編集部おすすめ特集</div>
-                                    <div class="list-subtitle">厳選コンテンツ</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🎁</div>
-                                <div class="list-content">
-                                    <div class="list-title">あなたへのおすすめ</div>
-                                    <div class="list-subtitle">パーソナライズ</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="1" data-content="2">
-                        <div class="content-card color-pink">
-                            <div class="content-card-title">新着コンテンツ</div>
-                            <div class="content-card-text">
-                                最新の情報をいち早くお届け。常に新鮮なコンテンツをチェックできます。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">🆕</div>
-                                <div class="list-content">
-                                    <div class="list-title">本日公開の新記事</div>
-                                    <div class="list-subtitle">30分前</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">📱</div>
-                                <div class="list-content">
-                                    <div class="list-title">アップデート情報</div>
-                                    <div class="list-subtitle">1時間前</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="1" data-content="3">
-                        <div class="content-card color-purple">
-                            <div class="content-card-title">ランキング</div>
-                            <div class="content-card-text">
-                                週間・月間のランキングをチェック。人気のコンテンツを見逃さないように。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">🏆</div>
-                                <div class="list-content">
-                                    <div class="list-title">週間ランキングTOP10</div>
-                                    <div class="list-subtitle">2月第2週</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">📊</div>
-                                <div class="list-content">
-                                    <div class="list-title">月間ベスト記事</div>
-                                    <div class="list-subtitle">2月度</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- スライド3 -->
-            <div class="carousel-slide">
-                <!-- サブタブ -->
-                <div class="subtabs-container" id="subtabs-2">
-                    <div class="subtab active" data-slide="2" data-subtab="0">設定</div>
-                    <div class="subtab" data-slide="2" data-subtab="1">通知</div>
-                    <div class="subtab" data-slide="2" data-subtab="2">アカウント</div>
-                    <div class="subtab" data-slide="2" data-subtab="3">ヘルプ</div>
-                </div>
-
-                <!-- サブタブコンテンツ -->
-                <div class="subtab-content-wrapper">
-                    <div class="subtab-content active" data-slide="2" data-content="0">
-                        <div class="content-card color-green">
-                            <div class="content-card-title">基本設定</div>
-                            <div class="content-card-text">
-                                アプリの表示や動作に関する設定を変更できます。お好みにカスタマイズしましょう。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">🎨</div>
-                                <div class="list-content">
-                                    <div class="list-title">テーマ設定</div>
-                                    <div class="list-subtitle">ライト / ダーク</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🌐</div>
-                                <div class="list-content">
-                                    <div class="list-title">言語設定</div>
-                                    <div class="list-subtitle">日本語</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="2" data-content="1">
-                        <div class="content-card color-orange">
-                            <div class="content-card-title">通知設定</div>
-                            <div class="content-card-text">
-                                受け取りたい通知の種類を選択できます。必要な情報だけを受け取りましょう。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">🔔</div>
-                                <div class="list-content">
-                                    <div class="list-title">プッシュ通知</div>
-                                    <div class="list-subtitle">オン</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">📧</div>
-                                <div class="list-content">
-                                    <div class="list-title">メール通知</div>
-                                    <div class="list-subtitle">週1回</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="2" data-content="2">
-                        <div class="content-card color-blue">
-                            <div class="content-card-title">アカウント管理</div>
-                            <div class="content-card-text">
-                                プロフィール情報やセキュリティ設定を管理できます。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">👤</div>
-                                <div class="list-content">
-                                    <div class="list-title">プロフィール編集</div>
-                                    <div class="list-subtitle">名前、アイコン等</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">🔒</div>
-                                <div class="list-content">
-                                    <div class="list-title">セキュリティ</div>
-                                    <div class="list-subtitle">パスワード変更</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subtab-content" data-slide="2" data-content="3">
-                        <div class="content-card color-pink">
-                            <div class="content-card-title">ヘルプ・サポート</div>
-                            <div class="content-card-text">
-                                使い方がわからない時は、こちらからサポート情報をご覧ください。
-                            </div>
-                        </div>
-                        <div class="content-list">
-                            <div class="content-list-item">
-                                <div class="list-icon">❓</div>
-                                <div class="list-content">
-                                    <div class="list-title">よくある質問</div>
-                                    <div class="list-subtitle">FAQ</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                            <div class="content-list-item">
-                                <div class="list-icon">💬</div>
-                                <div class="list-content">
-                                    <div class="list-title">お問い合わせ</div>
-                                    <div class="list-subtitle">サポートチーム</div>
-                                </div>
-                                <div class="list-arrow">›</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+${slidesHTML}        </div>
         <div class="carousel-indicators">
-            <div class="indicator active" data-slide="0"></div>
-            <div class="indicator" data-slide="1"></div>
-            <div class="indicator" data-slide="2"></div>
-        </div>
+${indicatorsHTML}        </div>
     </div>
 
     <script>
@@ -779,128 +1244,142 @@
         const mainSlides = document.querySelectorAll('.carousel-slide');
         const mainTabs = document.querySelectorAll('.main-tab');
         const indicators = document.querySelectorAll('.indicator');
+        const currentSubTabs = [${d.mainTabs.map(() => '0').join(', ')}];
 
-        // 各スライドの現在のサブタブを追跡
-        const currentSubTabs = [0, 0, 0];
-
-        // メインタブクリックイベント
-        mainTabs.forEach((tab, index) => {
-            tab.addEventListener('click', () => {
-                goToMainSlide(index);
-            });
-        });
-
-        // インジケータークリックイベント
-        indicators.forEach((indicator, index) => {
-            indicator.addEventListener('click', () => {
-                goToMainSlide(index);
-            });
-        });
-
-        // サブタブクリックイベント
+        mainTabs.forEach((tab, index) => { tab.addEventListener('click', () => goToMainSlide(index)); });
+        indicators.forEach((ind, index) => { ind.addEventListener('click', () => goToMainSlide(index)); });
         document.querySelectorAll('.subtab').forEach(subtab => {
             subtab.addEventListener('click', function() {
-                const slideIndex = parseInt(this.dataset.slide);
-                const subtabIndex = parseInt(this.dataset.subtab);
-                goToSubTab(slideIndex, subtabIndex);
+                goToSubTab(parseInt(this.dataset.slide), parseInt(this.dataset.subtab));
             });
         });
 
-        // メインスライド変更関数
         function changeMainSlide(direction) {
-            let newSlide = currentMainSlide + direction;
-            if (newSlide < 0) newSlide = mainSlides.length - 1;
-            if (newSlide >= mainSlides.length) newSlide = 0;
-            goToMainSlide(newSlide);
+            let n = currentMainSlide + direction;
+            if (n < 0) n = mainSlides.length - 1;
+            if (n >= mainSlides.length) n = 0;
+            goToMainSlide(n);
         }
 
-        // 特定のメインスライドに移動
         function goToMainSlide(index) {
-            // 現在のアクティブクラスを削除
             mainSlides[currentMainSlide].classList.remove('active');
             mainTabs[currentMainSlide].classList.remove('active');
             indicators[currentMainSlide].classList.remove('active');
-
-            // 新しいスライドをアクティブに
             currentMainSlide = index;
-            mainSlides[currentMainSlide].classList.add('active');
-            mainTabs[currentMainSlide].classList.add('active');
-            indicators[currentMainSlide].classList.add('active');
-
-            // タイトルを変更（フェードエフェクト付き）
-            updateMainTitle(index);
-        }
-
-        // メインタイトルを更新する関数
-        function updateMainTitle(index) {
+            mainSlides[index].classList.add('active');
+            mainTabs[index].classList.add('active');
+            indicators[index].classList.add('active');
             const mainTitle = document.getElementById('main-title');
-            const newTitle = mainTabs[index].dataset.title;
-
-            // フェードアウト
             mainTitle.style.opacity = '0';
-
-            // テキスト変更後にフェードイン
             setTimeout(() => {
-                mainTitle.textContent = newTitle;
+                mainTitle.textContent = mainTabs[index].dataset.title;
                 mainTitle.style.opacity = '1';
             }, 300);
         }
 
-        // サブタブ切り替え関数
         function goToSubTab(slideIndex, subtabIndex) {
-            // 対象スライドのサブタブとコンテンツを取得
-            const subtabs = document.querySelectorAll(`.subtab[data-slide="${slideIndex}"]`);
-            const contents = document.querySelectorAll(`.subtab-content[data-slide="${slideIndex}"]`);
-
-            // 現在のアクティブを解除
+            const subtabs = document.querySelectorAll('.subtab[data-slide="' + slideIndex + '"]');
+            const contents = document.querySelectorAll('.subtab-content[data-slide="' + slideIndex + '"]');
             subtabs[currentSubTabs[slideIndex]].classList.remove('active');
             contents[currentSubTabs[slideIndex]].classList.remove('active');
-
-            // 新しいサブタブをアクティブに
             currentSubTabs[slideIndex] = subtabIndex;
             subtabs[subtabIndex].classList.add('active');
             contents[subtabIndex].classList.add('active');
-
-            // サブタブを中央に表示（スムーズスクロール）
-            const subtabsContainer = document.getElementById(`subtabs-${slideIndex}`);
-            const activeSubtab = subtabs[subtabIndex];
-            const containerWidth = subtabsContainer.offsetWidth;
-            const subtabLeft = activeSubtab.offsetLeft;
-            const subtabWidth = activeSubtab.offsetWidth;
-            const scrollTo = subtabLeft - (containerWidth / 2) + (subtabWidth / 2);
-
-            subtabsContainer.scrollTo({
-                left: scrollTo,
-                behavior: 'smooth'
-            });
+            const container = document.getElementById('subtabs-' + slideIndex);
+            const active = subtabs[subtabIndex];
+            container.scrollTo({ left: active.offsetLeft - container.offsetWidth / 2 + active.offsetWidth / 2, behavior: 'smooth' });
         }
 
-        // スワイプ操作のサポート（メインスライド）
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        const carouselContainer = document.querySelector('.carousel-container');
-
-        carouselContainer.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
-
-        carouselContainer.addEventListener('touchend', e => {
+        let touchStartX = 0, touchEndX = 0;
+        const cc = document.querySelector('.carousel-container');
+        cc.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        cc.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
+            const diff = touchEndX - touchStartX;
+            if (diff < -50) changeMainSlide(1);
+            if (diff > 50) changeMainSlide(-1);
         });
+    <\/script>
+</body>
+</html>`;
+}
 
-        function handleSwipe() {
-            const swipeThreshold = 50;
-            if (touchEndX < touchStartX - swipeThreshold) {
-                // 左スワイプ - 次へ
-                changeMainSlide(1);
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ===== PREVIEW =====
+let previewTimeout;
+function updatePreview() {
+    clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(() => {
+        const html = generateHTML();
+        const iframe = document.getElementById('previewFrame');
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+    }, 150);
+}
+
+// ===== EXPORT =====
+function exportHTML() {
+    const html = generateHTML();
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mobile_page.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function exportJSON() {
+    syncDataFromForm();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'page_data.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function importJSON() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            try {
+                data = JSON.parse(ev.target.result);
+                selectedMainTab = 0;
+                selectedContentMainTab = 0;
+                selectedContentSubTab = 0;
+                syncFormFromData();
+                renderMainTabsList();
+                renderContentSelectors();
+                updatePreview();
+            } catch (err) {
+                alert('JSONの読み込みに失敗しました: ' + err.message);
             }
-            if (touchEndX > touchStartX + swipeThreshold) {
-                // 右スワイプ - 前へ
-                changeMainSlide(-1);
-            }
-        }
-    </script>
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function resetAll() {
+    if (!confirm('すべてのデータをリセットしますか？')) return;
+    location.reload();
+}
+
+// ===== START =====
+init();
+</script>
 </body>
 </html>
