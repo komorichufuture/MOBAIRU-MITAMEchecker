@@ -1,430 +1,227 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>今日は何する？</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    body{
-      display: grid;
-      place-items: center;
-      background: #050a12;
-      touch-action: pan-y;
-    }
-
-    .hero{
-      text-align: center;
-      width: 100%;
-      padding: 20px;
-      padding-top: 15vh;  /* ← 追加：画面高さの15%を上部余白に */
-      box-sizing: border-box;
-    }
-
-    .neon2{
-      position: relative;
-      font-family:
-        "Yu Mincho",
-        "Hiragino Mincho ProN",
-        "Hiragino Mincho Pro",
-        "Noto Serif JP",
-        "MS Mincho",
-        serif;
-      font-weight: 700;
-      font-size: clamp(48px, 12vw, 120px);
-      line-height: 1.2;
-      color: #e9feff;
-      letter-spacing: .05em;
-      text-shadow:
-        0 0 12px rgba(0,200,255,.75),
-        0 0 32px rgba(0,140,255,.5);
-      margin-bottom: 8px;
-      opacity: 0;
-      animation: fadeInDown 1.2s ease-out forwards;
-      animation-delay: 0.2s;
-    }
-
-    .neon2::before{
-      content: attr(data-text);
-      position: absolute;
-      inset: 0;
-      color: #00c8ff;
-      filter: blur(18px);
-      opacity: 1;
-      z-index: -1;
-    }
-
-    .sub{
-      margin-top: clamp(8px, 2vw, 16px);
-      font-family: system-ui, sans-serif;
-      font-size: clamp(14px, 3vw, 20px);
-      letter-spacing: .25em;
-      color: rgba(180,220,255,.65);
-      text-shadow: 0 0 6px rgba(0,160,255,.3);
-      opacity: 0;
-      animation: fadeInDown 1s ease-out forwards;
-      animation-delay: 0.8s;
-    }
-
-    .choices{
-      margin-top: clamp(40px, 8vw, 80px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: clamp(20px, 5vw, 60px);
-      position: relative;
-      padding: 20px 10px;
-      opacity: 0;
-      animation: fadeInUp 1s ease-out forwards;
-      animation-delay: 1.4s;
-    }
-
-    .choice{
-      text-align: center;
-      cursor: pointer;
-      user-select: none;
-      transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      padding: 16px 12px;
-      border-radius: 12px;
-      min-width: 80px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .choice:nth-child(1){
-      animation: fadeInScale 0.8s ease-out forwards;
-      animation-delay: 1.6s;
-      opacity: 0;
-    }
-
-    .choice:nth-child(2){
-      animation: fadeInScale 0.8s ease-out forwards;
-      animation-delay: 1.9s;
-      opacity: 0;
-    }
-
-    .choice:nth-child(3){
-      animation: fadeInScale 0.8s ease-out forwards;
-      animation-delay: 2.2s;
-      opacity: 0;
-    }
-
-    .choice:active{
-      transform: scale(0.95);
-    }
-
-    .choice .jp{
-      font-family:
-        "Yu Mincho",
-        "Hiragino Mincho ProN",
-        "Hiragino Mincho Pro",
-        "Noto Serif JP",
-        "MS Mincho",
-        serif;
-      font-size: clamp(32px, 6vw, 48px);
-      color: rgba(200,220,255,.35);
-      transition: all .3s ease;
-      font-weight: 600;
-    }
-
-    .choice .en{
-      margin-top: 8px;
-      font-family: system-ui, sans-serif;
-      font-size: clamp(11px, 2.2vw, 14px);
-      letter-spacing: .3em;
-      color: rgba(160,200,255,.3);
-      transition: all .3s ease;
-      font-weight: 500;
-    }
-
-    .choice.active{
-      transform: scale(1.2);
-      background: rgba(0,200,255,.05);
-    }
-
-    .choice.active .jp{
-      color: #e9feff;
-      text-shadow:
-        0 0 10px rgba(0,200,255,.8),
-        0 0 28px rgba(0,140,255,.6);
-    }
-
-    .choice.active .en{
-      color: rgba(200,235,255,.85);
-      text-shadow: 0 0 6px rgba(0,160,255,.4);
-    }
-
-    .indicators{
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 32px;
-      opacity: 0;
-      animation: fadeIn 0.8s ease-out forwards;
-      animation-delay: 2.8s;
-    }
-
-    .indicator{
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(200,220,255,.2);
-      transition: all .3s ease;
-    }
-
-    .indicator.active{
-      background: #00c8ff;
-      box-shadow: 0 0 12px rgba(0,200,255,.6);
-      width: 24px;
-      border-radius: 4px;
-    }
-
-    .swipe-hint{
-      margin-top: 24px;
-      font-family: system-ui, sans-serif;
-      font-size: 12px;
-      color: rgba(160,200,255,.4);
-      letter-spacing: .2em;
-      animation: pulse 2s ease-in-out infinite;
-      opacity: 0;
-      animation: fadeIn 0.8s ease-out forwards, pulse 2s ease-in-out infinite;
-      animation-delay: 3.2s, 3.2s;
-    }
-
-    @keyframes fadeInDown{
-      from{
-        opacity: 0;
-        transform: translateY(-30px);
-      }
-      to{
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeInUp{
-      from{
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to{
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeInScale{
-      from{
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      to{
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes fadeIn{
-      from{
-        opacity: 0;
-      }
-      to{
-        opacity: 1;
-      }
-    }
-
-    @keyframes pulse{
-      0%, 100%{ opacity: .4; }
-      50%{ opacity: .7; }
-    }
-
-    @media (max-width: 480px){
-      .neon2{ 
-        font-size: 40px;
-        margin-bottom: 4px;
-      }
-      .sub{ 
-        font-size: 13px;
-      }
-      .choices{
-        gap: 16px;
-      }
-      .choice .jp{
-        font-size: 28px;
-      }
-      .choice .en{
-        font-size: 10px;
-      }
-    }
-
-    @media (max-width: 360px){
-      .choices{
-        flex-direction: column;
-        gap: 24px;
-        margin-top: 32px;
-      }
-      .choice{
-        width: 100%;
-        max-width: 200px;
-      }
-      .choice.active{
-        transform: scale(1.1);
-      }
-    }
-
-    @media (orientation: landscape) and (max-height: 500px){
-      .hero{
-        padding: 10px;
-        padding-top: 5vh;  /* 横向き時は控えめに */
-      }
-      .neon2{
-        font-size: 36px;
-      }
-      .sub{
-        font-size: 12px;
-        margin-top: 4px;
-      }
-      .choices{
-        margin-top: 20px;
-        gap: 20px;
-      }
-      .choice .jp{
-        font-size: 24px;
-      }
-      .indicators{
-        margin-top: 16px;
-      }
-      .swipe-hint{
-        margin-top: 12px;
-        font-size: 10px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モバイルページ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; background-color: #e8e8e8; max-width: 100%; overflow-x: hidden; }
+        @media (min-width: 768px) { body { display: flex; flex-direction: column; align-items: center; } .header-grid, .main-tabs-container, .carousel-container { max-width: 768px; } .header-grid { width: 768px; } }
+        .header-grid { width: 100vw; height: 75vw; background: linear-gradient(135deg, #ffffff 0%, #d1d1d1 100%); display: flex; justify-content: center; align-items: flex-end; padding-bottom: 30px; position: relative; }
+        .vertical-title { writing-mode: vertical-rl; font-size: 38px; color: #050505; font-weight: bold; letter-spacing: 0.1em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); transition: opacity 0.3s ease, filter 0.8s ease-in-out; }
+        @media (min-width: 768px) { .vertical-title { font-size: 56px; } }
+        @media (min-width: 1024px) { .vertical-title { font-size: 75px; } .header-grid { height: 60vw; max-height: 600px; } }
+        .main-tabs-container { display: flex; background-color: white; border-bottom: 2px solid #e0e0e0; }
+        .main-tab { flex: 1; padding: 16px; text-align: center; font-size: 32px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; background-color: white; }
+        .main-tab.active { color: #666666; border-bottom-color: #666666; background-color: #f9f9ff; }
+        .main-tab:hover { background-color: #f5f5f5; }
+        .carousel-container { position: relative; background-color: white; }
+        .carousel-wrapper { display: flex; }
+        .carousel-slide { min-width: 100%; display: none; }
+        .carousel-slide.active { display: block; }
+        .subtabs-container { display: flex; background: white; padding: 16px 20px; gap: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; border-bottom: 1px solid #f0f0f0; }
+        .subtabs-container::-webkit-scrollbar { display: none; }
+        .subtab { padding: 20px 48px; border-radius: 0px; background: #f0f0f0; color: #666; font-size: 28px; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0; }
+        .subtab.active { background: #666666; color: white; box-shadow: 0 2px 8px #6666664d; }
+        .subtab:active { transform: scale(0.95); }
+        .subtab-content-wrapper { background: white; }
+        .subtab-content { display: none; padding: 24px 20px; animation: fadeIn 0.3s ease; }
+        .subtab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .content-card { border-radius: 12px; padding: 30px 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        .content-card-image { width: calc(100% + 40px); margin: -30px -20px 20px -20px; max-height: 200px; object-fit: cover; display: block; }
+        .content-card-title { font-size: 40px; font-weight: bold; color: #333; margin-bottom: 12px; }
+        .content-card-text { font-size: 30px; color: #555; line-height: 1.8; }
+        .content-list { background: white; }
+        .content-list-item { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+        .content-list-item:last-child { border-bottom: none; }
+        a.content-list-item:hover { background-color: #f8f8f8; }
+        .list-content { flex: 1; }
+        .list-title { font-size: 36px; font-weight: bold; color: #222; margin-bottom: 4px; }
+        .list-subtitle { font-size: 30px; color: #555; }
+        .list-arrow { color: #ccc; font-size: 48px; margin-left: 8px; }
+        .carousel-indicators { display: flex; justify-content: center; padding: 20px; gap: 10px; background: white; }
+        .indicator { width: 10px; height: 10px; border-radius: 50%; background-color: #ddd; cursor: pointer; transition: all 0.3s ease; }
+        .indicator.active { background-color: #666666; width: 30px; border-radius: 5px; }
+        .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(255,255,255,0.95); border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); z-index: 10; transition: all 0.2s; }
+        .carousel-nav:active { transform: translateY(-50%) scale(0.9); }
+        .carousel-nav.prev { left: 10px; }
+        .carousel-nav.next { right: 10px; }
+    </style>
 </head>
 <body>
-  <div class="hero">
-    <div class="neon2" data-text="今日は何する？">今日は何する？</div>
-    <div class="sub">What will you do today?</div>
-
-    <div class="choices" role="tablist" aria-label="行動選択">
-      <div class="choice active" data-value="play" tabindex="0" role="tab" aria-selected="true">
-        <div class="jp">遊ぶ</div>
-        <div class="en">PLAY</div>
-      </div>
-
-      <div class="choice" data-value="make" tabindex="0" role="tab" aria-selected="false">
-        <div class="jp">作る</div>
-        <div class="en">CREATE</div>
-      </div>
-
-      <div class="choice" data-value="watch" tabindex="0" role="tab" aria-selected="false">
-        <div class="jp">見る</div>
-        <div class="en">WATCH</div>
-      </div>
+    <div class="header-grid">
+        <h1 class="vertical-title" id="main-title">ソレデハ</h1>
     </div>
-
-    <div class="indicators">
-      <div class="indicator active"></div>
-      <div class="indicator"></div>
-      <div class="indicator"></div>
+    <div class="main-tabs-container">
+        <div class="main-tab active" data-tab="0" data-title="遊ぶ、">タブ1</div>
+        <div class="main-tab" data-tab="1" data-title="見る。">タブ2</div>
+        <div class="main-tab" data-tab="2" data-title="作る▢">タブ3</div>
     </div>
-
-    <div class="swipe-hint">← スワイプして選択 →</div>
-  </div>
-
-  <script>
-    const choices = [...document.querySelectorAll('.choice')];
-    const indicators = [...document.querySelectorAll('.indicator')];
-    let index = 0;
-
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const swipeThreshold = 50;
-
-    function update(){
-      choices.forEach((c,i)=>{
-        const active = (i === index);
-        c.classList.toggle('active', active);
-        c.setAttribute('aria-selected', active ? 'true' : 'false');
-      });
-      
-      indicators.forEach((ind,i)=>{
-        ind.classList.toggle('active', i === index);
-      });
-    }
-
-    choices.forEach((c,i)=>{
-      c.addEventListener('click', ()=>{
-        index = i;
-        update();
-      });
-    });
-
-    window.addEventListener('keydown', (e)=>{
-      if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
-        e.preventDefault();
-        index = (index + 1) % choices.length;
-        update();
-      }
-      if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
-        e.preventDefault();
-        index = (index - 1 + choices.length) % choices.length;
-        update();
-      }
-      if(e.key === 'Enter'){
-        location.href = choices[index].dataset.value + '.html';
-      }
-    });
-
-    const choicesContainer = document.querySelector('.choices');
-    
-    choicesContainer.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-
-    choicesContainer.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    }, {passive: true});
-
-    function handleSwipe(){
-      const diff = touchStartX - touchEndX;
-      
-      if(Math.abs(diff) > swipeThreshold){
-        if(diff > 0){
-          index = (index + 1) % choices.length;
-        } else {
-          index = (index - 1 + choices.length) % choices.length;
+    <div class="carousel-container">
+        <button class="carousel-nav prev" onclick="changeMainSlide(-1)">‹</button>
+        <button class="carousel-nav next" onclick="changeMainSlide(1)">›</button>
+        <div class="carousel-wrapper">
+            <div class="carousel-slide active">
+                <div class="subtabs-container" id="subtabs-0">
+                    <div class="subtab active" data-slide="0" data-subtab="0">サブタブ1</div>
+                    <div class="subtab" data-slide="0" data-subtab="1">サブタブ2</div>
+                </div>
+                <div class="subtab-content-wrapper">
+                    <div class="subtab-content active" data-slide="0" data-content="0">
+                        <div class="content-card" style="background:linear-gradient(135deg,#cccccc 0%,#aaaaaa 100%);">
+                            <div class="content-card-title">カードタイトル</div>
+                            <div class="content-card-text">カードの説明文がここに入ります。</div>
+                        </div>
+                        <div class="content-list">
+                            <div class="content-list-item">
+                                <div class="list-content">
+                                    <div class="list-title">リスト項目1</div>
+                                    <div class="list-subtitle">2026年2月15日</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>
+                            <div class="content-list-item">
+                                <div class="list-content">
+                                    <div class="list-title">リスト項目2</div>
+                                    <div class="list-subtitle">2026年2月20日</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subtab-content" data-slide="0" data-content="1">
+                        <div class="content-card" style="background:linear-gradient(135deg,#d0d0d0 0%,#b8b8b8 100%);">
+                            <div class="content-card-title">カード2</div>
+                            <div class="content-card-text">説明文2</div>
+                        </div>
+                        <div class="content-list">
+                            <div class="content-list-item">
+                                <div class="list-content">
+                                    <div class="list-title">項目</div>
+                                    <div class="list-subtitle">詳細</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-slide">
+                <div class="subtabs-container" id="subtabs-1">
+                    <div class="subtab active" data-slide="1" data-subtab="0">サブタブ</div>
+                </div>
+                <div class="subtab-content-wrapper">
+                    <div class="subtab-content active" data-slide="1" data-content="0">
+                        <div class="content-card" style="background:linear-gradient(135deg,#d0d0d0 0%,#b8b8b8 100%);">
+                            <div class="content-card-title">タイトル</div>
+                            <div class="content-card-text">説明</div>
+                        </div>
+                        <div class="content-list">
+                            <div class="content-list-item">
+                                <div class="list-content">
+                                    <div class="list-title">TOP3</div>
+                                    <div class="list-subtitle">閲覧数 15,234</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-slide">
+                <div class="subtabs-container" id="subtabs-2">
+                    <div class="subtab active" data-slide="2" data-subtab="0">サブタブ</div>
+                </div>
+                <div class="subtab-content-wrapper">
+                    <div class="subtab-content active" data-slide="2" data-content="0">
+                        <div class="content-card" style="background:linear-gradient(135deg,#c8c8c8 0%,#a0a0a0 100%);">
+                            <div class="content-card-title">タイトル</div>
+                            <div class="content-card-text">説明文</div>
+                        </div>
+                        <div class="content-list">
+                            <div class="content-list-item">
+                                <div class="list-content">
+                                    <div class="list-title">項目A</div>
+                                    <div class="list-subtitle">詳細 / 補足</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>
+                            <div class="content-list-item">
+                                <div class="list-content">
+                                    <div class="list-title">項目B</div>
+                                    <div class="list-subtitle">詳細情報</div>
+                                </div>
+                                <div class="list-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-indicators">
+            <div class="indicator active" data-slide="0"></div>
+            <div class="indicator" data-slide="1"></div>
+            <div class="indicator" data-slide="2"></div>
+        </div>
+    </div>
+    <script>
+        let currentMainSlide = 0;
+        const mainSlides = document.querySelectorAll('.carousel-slide');
+        const mainTabs = document.querySelectorAll('.main-tab');
+        const indicators = document.querySelectorAll('.indicator');
+        const currentSubTabs = [0, 0, 0];
+        mainTabs.forEach((tab, index) => { tab.addEventListener('click', () => goToMainSlide(index)); });
+        indicators.forEach((ind, index) => { ind.addEventListener('click', () => goToMainSlide(index)); });
+        document.querySelectorAll('.subtab').forEach(subtab => {
+            subtab.addEventListener('click', function() { goToSubTab(parseInt(this.dataset.slide), parseInt(this.dataset.subtab)); });
+        });
+        function changeMainSlide(direction) { let n = currentMainSlide + direction; if (n < 0) n = mainSlides.length - 1; if (n >= mainSlides.length) n = 0; goToMainSlide(n); }
+        function goToMainSlide(index) {
+            mainSlides[currentMainSlide].classList.remove('active'); mainTabs[currentMainSlide].classList.remove('active'); indicators[currentMainSlide].classList.remove('active');
+            currentMainSlide = index; mainSlides[index].classList.add('active'); mainTabs[index].classList.add('active'); indicators[index].classList.add('active');
+            const mainTitle = document.getElementById('main-title'); mainTitle.style.opacity = '0';
+            setTimeout(() => { mainTitle.textContent = mainTabs[index].dataset.title; mainTitle.style.opacity = '1'; }, 300);
         }
-        update();
-        
-        if('vibrate' in navigator){
-          navigator.vibrate(10);
+        function goToSubTab(slideIndex, subtabIndex) {
+            const subtabs = document.querySelectorAll('.subtab[data-slide="' + slideIndex + '"]');
+            const contents = document.querySelectorAll('.subtab-content[data-slide="' + slideIndex + '"]');
+            subtabs[currentSubTabs[slideIndex]].classList.remove('active'); contents[currentSubTabs[slideIndex]].classList.remove('active');
+            currentSubTabs[slideIndex] = subtabIndex; subtabs[subtabIndex].classList.add('active'); contents[subtabIndex].classList.add('active');
+            const container = document.getElementById('subtabs-' + slideIndex); const active = subtabs[subtabIndex];
+            container.scrollTo({ left: active.offsetLeft - container.offsetWidth / 2 + active.offsetWidth / 2, behavior: 'smooth' });
         }
-      }
-    }
+        let touchStartX = 0, touchEndX = 0;
+        const cc = document.querySelector('.carousel-container');
+        cc.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        cc.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; const diff = touchEndX - touchStartX; if (diff < -50) changeMainSlide(1); if (diff > 50) changeMainSlide(-1); });
 
-    let lastTap = 0;
-    choicesContainer.addEventListener('touchend', (e) => {
-      const currentTime = new Date().getTime();
-      const tapLength = currentTime - lastTap;
-      
-      if(tapLength < 300 && tapLength > 0){
-        location.href = choices[index].dataset.value + '.html';
-        e.preventDefault();
-      }
-      lastTap = currentTime;
-    });
-
-    update();
-  </script>
+        // Blur Animation
+        (function() {
+            const blurConfig = {
+                blurAmount: 12,
+                minInterval: 1300,
+                maxInterval: 5000,
+                duration: 1000
+            };
+            
+            function scheduleBlur() {
+                const delay = Math.random() * (blurConfig.maxInterval - blurConfig.minInterval) + blurConfig.minInterval;
+                setTimeout(() => {
+                    const title = document.getElementById('main-title');
+                    if (title) {
+                        title.style.transition = 'filter ' + blurConfig.duration + 'ms ease-in-out';
+                        title.style.filter = 'blur(' + blurConfig.blurAmount + 'px)';
+                        setTimeout(() => {
+                            title.style.filter = 'blur(0px)';
+                        }, blurConfig.duration);
+                    }
+                    scheduleBlur();
+                }, delay);
+            }
+            scheduleBlur();
+        })();
+    </script>
 </body>
 </html>
