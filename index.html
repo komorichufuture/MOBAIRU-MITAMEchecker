@@ -25,6 +25,7 @@
       text-align: center;
       width: 100%;
       padding: 20px;
+      padding-top: 15vh;  /* ← 追加：画面高さの15%を上部余白に */
       box-sizing: border-box;
     }
 
@@ -46,7 +47,6 @@
         0 0 12px rgba(0,200,255,.75),
         0 0 32px rgba(0,140,255,.5);
       margin-bottom: 8px;
-      /* フェードインアニメーション */
       opacity: 0;
       animation: fadeInDown 1.2s ease-out forwards;
       animation-delay: 0.2s;
@@ -69,13 +69,11 @@
       letter-spacing: .25em;
       color: rgba(180,220,255,.65);
       text-shadow: 0 0 6px rgba(0,160,255,.3);
-      /* フェードインアニメーション */
       opacity: 0;
       animation: fadeInDown 1s ease-out forwards;
       animation-delay: 0.8s;
     }
 
-    /* スマホ向け選択肢エリア */
     .choices{
       margin-top: clamp(40px, 8vw, 80px);
       display: flex;
@@ -84,7 +82,6 @@
       gap: clamp(20px, 5vw, 60px);
       position: relative;
       padding: 20px 10px;
-      /* フェードインアニメーション */
       opacity: 0;
       animation: fadeInUp 1s ease-out forwards;
       animation-delay: 1.4s;
@@ -102,7 +99,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* 各選択肢の個別フェードイン */
     .choice:nth-child(1){
       animation: fadeInScale 0.8s ease-out forwards;
       animation-delay: 1.6s;
@@ -121,7 +117,6 @@
       opacity: 0;
     }
 
-    /* タッチフィードバック */
     .choice:active{
       transform: scale(0.95);
     }
@@ -167,13 +162,11 @@
       text-shadow: 0 0 6px rgba(0,160,255,.4);
     }
 
-    /* インジケーター（ドット） */
     .indicators{
       display: flex;
       justify-content: center;
       gap: 12px;
       margin-top: 32px;
-      /* フェードインアニメーション */
       opacity: 0;
       animation: fadeIn 0.8s ease-out forwards;
       animation-delay: 2.8s;
@@ -194,7 +187,6 @@
       border-radius: 4px;
     }
 
-    /* スワイプヒント */
     .swipe-hint{
       margin-top: 24px;
       font-family: system-ui, sans-serif;
@@ -202,13 +194,11 @@
       color: rgba(160,200,255,.4);
       letter-spacing: .2em;
       animation: pulse 2s ease-in-out infinite;
-      /* フェードインアニメーション */
       opacity: 0;
       animation: fadeIn 0.8s ease-out forwards, pulse 2s ease-in-out infinite;
       animation-delay: 3.2s, 3.2s;
     }
 
-    /* アニメーション定義 */
     @keyframes fadeInDown{
       from{
         opacity: 0;
@@ -256,7 +246,6 @@
       50%{ opacity: .7; }
     }
 
-    /* 狭い画面での縦並び対応 */
     @media (max-width: 480px){
       .neon2{ 
         font-size: 40px;
@@ -276,7 +265,6 @@
       }
     }
 
-    /* 極小画面（320px以下）での縦並び */
     @media (max-width: 360px){
       .choices{
         flex-direction: column;
@@ -292,10 +280,10 @@
       }
     }
 
-    /* 横向き対応 */
     @media (orientation: landscape) and (max-height: 500px){
       .hero{
         padding: 10px;
+        padding-top: 5vh;  /* 横向き時は控えめに */
       }
       .neon2{
         font-size: 36px;
@@ -343,14 +331,12 @@
       </div>
     </div>
 
-    <!-- インジケーター -->
     <div class="indicators">
       <div class="indicator active"></div>
       <div class="indicator"></div>
       <div class="indicator"></div>
     </div>
 
-    <!-- スワイプヒント -->
     <div class="swipe-hint">← スワイプして選択 →</div>
   </div>
 
@@ -359,7 +345,6 @@
     const indicators = [...document.querySelectorAll('.indicator')];
     let index = 0;
 
-    // スワイプ検出用
     let touchStartX = 0;
     let touchEndX = 0;
     const swipeThreshold = 50;
@@ -376,7 +361,6 @@
       });
     }
 
-    // タップ選択
     choices.forEach((c,i)=>{
       c.addEventListener('click', ()=>{
         index = i;
@@ -384,7 +368,6 @@
       });
     });
 
-    // キーボード操作（デスクトップ用）
     window.addEventListener('keydown', (e)=>{
       if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
         e.preventDefault();
@@ -401,7 +384,6 @@
       }
     });
 
-    // スワイプ操作
     const choicesContainer = document.querySelector('.choices');
     
     choicesContainer.addEventListener('touchstart', (e) => {
@@ -418,22 +400,18 @@
       
       if(Math.abs(diff) > swipeThreshold){
         if(diff > 0){
-          // 左スワイプ（次へ）
           index = (index + 1) % choices.length;
         } else {
-          // 右スワイプ（前へ）
           index = (index - 1 + choices.length) % choices.length;
         }
         update();
         
-        // 軽い振動フィードバック（対応デバイスのみ）
         if('vibrate' in navigator){
           navigator.vibrate(10);
         }
       }
     }
 
-    // ダブルタップで遷移
     let lastTap = 0;
     choicesContainer.addEventListener('touchend', (e) => {
       const currentTime = new Date().getTime();
@@ -446,7 +424,6 @@
       lastTap = currentTime;
     });
 
-    // 初期化
     update();
   </script>
 </body>
